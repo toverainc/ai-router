@@ -18,7 +18,7 @@ fn init_tracer(otlp_endpoint: String) -> Result<sdktrace::Tracer, TraceError> {
                 .with_endpoint(otlp_endpoint),
         )
         .with_trace_config(sdktrace::config().with_resource(Resource::new(vec![
-            opentelemetry::KeyValue::new("service.name", "openai_trtllm"),
+            opentelemetry::KeyValue::new("service.name", "ai_router"),
         ])))
         .install_batch(runtime::Tokio)
 }

@@ -25,7 +25,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 
 # Build our project
-RUN cargo build --release --bin openai_trtllm
+RUN cargo build --release --bin ai-router
 
 FROM debian:bookworm-slim AS runtime
 
@@ -38,6 +38,6 @@ RUN apt-get update -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/target/release/openai_trtllm openai_trtllm
+COPY --from=builder /app/target/release/ai-router ai-router
 
-ENTRYPOINT ["./openai_trtllm"]
+ENTRYPOINT ["./ai-router"]
