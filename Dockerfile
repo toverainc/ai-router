@@ -1,4 +1,4 @@
-FROM rust:1.74.0-bookworm as chef
+FROM rust:1.75.0-bookworm as chef
 
 WORKDIR /app
 
