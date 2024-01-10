@@ -78,15 +78,30 @@ chat_completion = client.chat.completions.create(
     stream=FLAGS.stream
 )
 
+output_start_time = None
+tokens = 0
 if FLAGS.stream:
     for chunk in chat_completion:
+        tokens += 1
+        if output_start_time is None:
+            output_start_time = time.time()
         print(chunk.choices[0].delta.content)
         print("****************")
 else:
     print("Chat completion results:")
     print(chat_completion.choices[0].message.content)
 
-response_time = time.time() - start_time
+timing = time.time()
+response_time = timing - start_time
+first_response_time = timing - output_start_time
+
+# Tokens per second
+# This may seem impossible with getting direct access to token output and having the tokenizer locally
+# BUT in this case Triton outputs incrementally on a per token basis so we get it handled for us
+tps = tokens / response_time
 
 # print the time delay
+print(f"Start of response {first_response_time:.2f} seconds after request")
 print(f"Full response received {response_time:.2f} seconds after request")
+print(f"Total tokens: {tokens}")
+print(f"Tokens per second: {tps:.2f}")
