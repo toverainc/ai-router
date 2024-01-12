@@ -21,7 +21,7 @@ Make sure your [easy-triton](https://github.com/toverainc/easy-triton) instance 
 
 Your OpenAI endpoint is available at `http://[your_host]:3000/v1`
 
-There are example clients in `clients/`
+There are example clients in `client/`
 
 ## Tracing
 We are tracing performance metrics using tracing, tracing-opentelemetry and opentelemetry-otlp crates.
