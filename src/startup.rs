@@ -3,6 +3,7 @@ use axum::routing::{get, post};
 use axum::Router;
 use axum_prometheus::PrometheusMetricLayer;
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
+use tokio::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::request_id::MakeRequestUuid;
 use tower_http::{
@@ -57,8 +58,9 @@ pub async fn run_server(config: Config) -> anyhow::Result<()> {
     let address = format!("{}:{}", config.host, config.port);
     tracing::info!("Starting server at {}", address);
 
-    axum::Server::bind(&address.parse()?)
-        .serve(app.into_make_service())
+    let listener = TcpListener::bind(address).await?;
+
+    axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await?;
 
