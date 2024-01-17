@@ -194,7 +194,7 @@ fn build_triton_request(request: CompletionCreateParams) -> anyhow::Result<Model
         .input(
             "max_tokens",
             [1, 1],
-            InferTensorData::Int32(vec![request.max_tokens as i32]),
+            InferTensorData::Int32(vec![i32::try_from(request.max_tokens)?]),
         )
         .input(
             "bad_words",
@@ -227,7 +227,7 @@ fn build_triton_request(request: CompletionCreateParams) -> anyhow::Result<Model
         .input(
             "beam_width",
             [1, 1],
-            InferTensorData::Int32(vec![request.n as i32]),
+            InferTensorData::Int32(vec![i32::try_from(request.n)?]),
         )
         .input(
             "stream",
