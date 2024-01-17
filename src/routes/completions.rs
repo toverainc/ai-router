@@ -1,4 +1,4 @@
-//! https://platform.openai.com/docs/api-reference/completions/create
+//! <https://platform.openai.com/docs/api-reference/completions/create>
 use std::collections::HashMap;
 use std::iter::IntoIterator;
 use std::time::{SystemTime, UNIX_EPOCH};
