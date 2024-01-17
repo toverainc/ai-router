@@ -263,23 +263,23 @@ fn build_chat_history(messages: Vec<ChatCompletionMessageParams>) -> String {
         match message {
             ChatCompletionMessageParams::System { content, name } => {
                 if let Some(name) = name {
-                    history.push_str(&format!("System {}: {}\n", name, content))
+                    history.push_str(&format!("System {}: {}\n", name, content));
                 } else {
-                    history.push_str(&format!("System: {}\n", content))
+                    history.push_str(&format!("System: {}\n", content));
                 }
             }
             ChatCompletionMessageParams::User { content, name } => {
                 if let Some(name) = name {
-                    history.push_str(&format!("User {}: {}\n", name, content))
+                    history.push_str(&format!("User {}: {}\n", name, content));
                 } else {
-                    history.push_str(&format!("User: {}\n", content))
+                    history.push_str(&format!("User: {}\n", content));
                 }
             }
             ChatCompletionMessageParams::Assistant { content, .. } => {
-                history.push_str(&format!("Assistant: {}\n", content))
+                history.push_str(&format!("Assistant: {}\n", content));
             }
             ChatCompletionMessageParams::Tool { content, .. } => {
-                history.push_str(&format!("Tool: {}\n", content))
+                history.push_str(&format!("Tool: {}\n", content));
             }
         }
     }
