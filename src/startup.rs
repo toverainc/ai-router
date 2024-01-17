@@ -17,6 +17,12 @@ use crate::config::Config;
 use crate::routes;
 use crate::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
 
+/// Start axum server
+///
+/// # Errors
+/// - when we're unable to connect to the Triton endpoint
+/// - when we're unable to bind the `TCPListener` for the axum server
+/// - when we're unable to start the axum server
 pub async fn run_server(config: Config) -> anyhow::Result<()> {
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
 
