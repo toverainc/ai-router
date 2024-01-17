@@ -209,7 +209,7 @@ fn build_triton_request(request: CompletionCreateParams) -> anyhow::Result<Model
                     .stop
                     .unwrap_or_else(|| vec!["</s>".to_string()])
                     .into_iter()
-                    .map(|s| s.into_bytes())
+                    .map(std::string::String::into_bytes)
                     .collect(),
             ),
         )
