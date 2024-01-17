@@ -1,5 +1,5 @@
 pub mod config;
-mod error;
+mod errors;
 pub mod routes;
 pub mod startup;
 pub mod telemetry;
