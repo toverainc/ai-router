@@ -29,6 +29,11 @@ fn init_tracer(otlp_endpoint: String) -> Result<sdktrace::Tracer, TraceError> {
 ///
 /// We are using `impl Subscriber` as return type to avoid having to spell out the actual
 /// type of the returned subscriber, which is indeed quite complex.
+///
+/// # Panics
+///
+/// Panics if `LogTracer` cannot be initialized
+///
 pub fn init_subscriber<Sink>(
     name: &str,
     env_filter: &str,
