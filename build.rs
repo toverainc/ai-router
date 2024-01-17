@@ -11,7 +11,7 @@ fn get_protobuf_paths<P: AsRef<Path>>(directory: P) -> std::io::Result<Vec<PathB
     for entry in WalkDir::new(directory) {
         let path = entry?.into_path();
         if path.extension() == Some(OsStr::new("proto")) {
-            paths.push(path.to_path_buf());
+            paths.push(path.clone());
         }
     }
     Ok(paths)
