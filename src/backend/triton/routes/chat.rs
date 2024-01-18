@@ -10,7 +10,7 @@ use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use openai_dive::v1::resources::chat::Role;
-use openai_dive::v1::resources::shared::Usage;
+use openai_dive::v1::resources::shared::{FinishReason, Usage};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tonic::codegen::tokio_stream::Stream;
@@ -123,7 +123,7 @@ async fn chat_completions_stream(
                     role: None,
                     content: None,
                 },
-                finish_reason: Some(FinishReason::Stop),
+                finish_reason: Some(FinishReason::StopSequenceReached),
             }],
         };
         yield Event::default().json_data(response).unwrap();
@@ -187,7 +187,7 @@ async fn chat_completions(
                 role: Role::Assistant,
                 content: Some(contents.into_iter().collect()),
             },
-            finish_reason: Some(FinishReason::Stop),
+            finish_reason: Some(FinishReason::StopSequenceReached),
         }],
         // Not supported yet, need triton to return usage stats
         // but add a fake one to make LangChain happy
@@ -414,20 +414,6 @@ struct ChatCompletionMessage {
     content: Option<String>,
     // Not supported yet:
     // tool_calls
-}
-
-#[allow(dead_code)]
-#[derive(Serialize, Debug)]
-#[serde(rename_all = "snake_case")]
-enum FinishReason {
-    /// The model hit a natural stop point or a provided stop sequence.
-    Stop,
-    /// The maximum number of tokens specified in the request was reached.
-    Length,
-    /// Content was omitted due to a flag from our content filters.
-    ContentFilter,
-    /// The model called a tool
-    ToolCalls,
 }
 
 #[derive(Serialize, Debug)]
