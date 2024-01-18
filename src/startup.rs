@@ -15,7 +15,7 @@ use tracing::Level;
 
 use crate::config::Config;
 use crate::routes;
-use crate::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
+use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
 
 /// Start axum server
 ///

@@ -18,9 +18,9 @@ use tracing::instrument;
 use uuid::Uuid;
 
 use crate::errors::AppError;
-use crate::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
-use crate::triton::request::{Builder, InferTensorData};
-use crate::triton::ModelInferRequest;
+use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
+use crate::backend::triton::request::{Builder, InferTensorData};
+use crate::backend::triton::ModelInferRequest;
 use crate::utils::deserialize_bytes_tensor;
 
 #[instrument(name = "chat_completions", skip(client, request))]

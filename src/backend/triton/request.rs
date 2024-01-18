@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use super::{InferTensorContents, ModelInferRequest};
-use crate::triton::model_infer_request::{InferInputTensor, InferRequestedOutputTensor};
+use crate::backend::triton::model_infer_request::{InferInputTensor, InferRequestedOutputTensor};
 
 pub(crate) struct Builder {
     inner: anyhow::Result<ModelInferRequest>,
