@@ -9,7 +9,7 @@ use axum::extract::State;
 use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
-use openai_dive::v1::resources::chat::Role;
+use openai_dive::v1::resources::chat::{ChatMessage, ChatMessageContent, Role};
 use openai_dive::v1::resources::shared::{FinishReason, Usage};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -183,9 +183,12 @@ async fn chat_completions(
         system_fingerprint: None,
         choices: vec![ChatCompletionChoice {
             index: 0,
-            message: ChatCompletionMessage {
+            message: ChatMessage {
+                name: None,
                 role: Role::Assistant,
-                content: Some(contents.into_iter().collect()),
+                tool_calls: None,
+                tool_call_id: None,
+                content: ChatMessageContent::Text(contents.into_iter().collect()),
             },
             finish_reason: Some(FinishReason::StopSequenceReached),
         }],
@@ -402,18 +405,8 @@ struct ChatCompletion {
 #[derive(Serialize, Debug)]
 struct ChatCompletionChoice {
     index: usize,
-    message: ChatCompletionMessage,
+    message: ChatMessage,
     finish_reason: Option<FinishReason>,
-}
-
-#[derive(Serialize, Debug)]
-struct ChatCompletionMessage {
-    /// The role of the author of this message.
-    role: Role,
-    /// The contents of the chunk message.
-    content: Option<String>,
-    // Not supported yet:
-    // tool_calls
 }
 
 #[derive(Serialize, Debug)]
