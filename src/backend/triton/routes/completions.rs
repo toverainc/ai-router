@@ -9,6 +9,7 @@ use axum::extract::State;
 use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
+use openai_dive::v1::resources::shared::Usage;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tonic::codegen::tokio_stream::Stream;
@@ -171,7 +172,7 @@ async fn completions(
         // but add a fake one to make LangChain happy
         usage: Some(Usage {
             prompt_tokens: 0,
-            completion_tokens: 0,
+            completion_tokens: Some(0),
             total_tokens: 0,
         }),
     }))
@@ -341,16 +342,6 @@ enum FinishReason {
     Length,
     /// Content was omitted due to a flag from our content filters.
     ContentFilter,
-}
-
-#[derive(Serialize, Debug, Default)]
-struct Usage {
-    /// Number of tokens in the prompt.
-    pub prompt_tokens: usize,
-    /// Number of tokens in the generated completion.
-    pub completion_tokens: usize,
-    /// Total number of tokens used in the request (prompt + completion).
-    pub total_tokens: usize,
 }
 
 fn default_best_of() -> usize {
