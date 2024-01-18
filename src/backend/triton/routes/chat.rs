@@ -10,8 +10,8 @@ use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use openai_dive::v1::resources::chat::{
-    ChatCompletionChunkChoice, ChatCompletionChunkResponse, ChatMessage, ChatMessageContent,
-    DeltaChatMessage, Role,
+    ChatCompletionChoice, ChatCompletionChunkChoice, ChatCompletionChunkResponse, ChatMessage,
+    ChatMessageContent, DeltaChatMessage, Role,
 };
 use openai_dive::v1::resources::shared::{FinishReason, Usage};
 use serde::{Deserialize, Serialize};
@@ -187,7 +187,7 @@ async fn chat_completions(
         model: model_name,
         system_fingerprint: None,
         choices: vec![ChatCompletionChoice {
-            index: 0,
+            index: Some(0),
             message: ChatMessage {
                 name: None,
                 role: Role::Assistant,
@@ -195,7 +195,7 @@ async fn chat_completions(
                 tool_call_id: None,
                 content: ChatMessageContent::Text(contents.into_iter().collect()),
             },
-            finish_reason: Some(FinishReason::StopSequenceReached),
+            finish_reason: FinishReason::StopSequenceReached,
         }],
         // Not supported yet, need triton to return usage stats
         // but add a fake one to make LangChain happy
@@ -405,13 +405,6 @@ struct ChatCompletion {
     choices: Vec<ChatCompletionChoice>,
     /// Usage statistics for the completion request.
     usage: Option<Usage>,
-}
-
-#[derive(Serialize, Debug)]
-struct ChatCompletionChoice {
-    index: usize,
-    message: ChatMessage,
-    finish_reason: Option<FinishReason>,
 }
 
 fn default_frequency_penalty() -> f32 {
