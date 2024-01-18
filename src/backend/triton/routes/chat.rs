@@ -274,30 +274,34 @@ fn build_triton_request(request: ChatCompletionCreateParams) -> anyhow::Result<M
     builder.build().context("failed to build triton request")
 }
 
-fn build_chat_history(messages: Vec<ChatCompletionMessageParams>) -> String {
+fn build_chat_history(messages: Vec<ChatMessage>) -> String {
     let mut history = String::new();
     for message in messages {
-        match message {
-            ChatCompletionMessageParams::System { content, name } => {
-                if let Some(name) = name {
+        let ChatMessageContent::Text(content) = message.content else {
+            continue;
+        };
+        match message.role {
+            Role::System => {
+                if let Some(name) = message.name {
                     history.push_str(&format!("System {}: {}\n", name, content));
                 } else {
                     history.push_str(&format!("System: {}\n", content));
                 }
             }
-            ChatCompletionMessageParams::User { content, name } => {
-                if let Some(name) = name {
+            Role::User => {
+                if let Some(name) = message.name {
                     history.push_str(&format!("User {}: {}\n", name, content));
                 } else {
                     history.push_str(&format!("User: {}\n", content));
                 }
             }
-            ChatCompletionMessageParams::Assistant { content, .. } => {
+            Role::Assistant => {
                 history.push_str(&format!("Assistant: {}\n", content));
             }
-            ChatCompletionMessageParams::Tool { content, .. } => {
+            Role::Tool => {
                 history.push_str(&format!("Tool: {}\n", content));
             }
+            Role::Function => {}
         }
     }
     history.push_str("ASSISTANT:");
@@ -308,7 +312,7 @@ fn build_chat_history(messages: Vec<ChatCompletionMessageParams>) -> String {
 #[derive(Deserialize, Debug)]
 pub(crate) struct ChatCompletionCreateParams {
     /// A list of messages comprising the conversation so far.
-    messages: Vec<ChatCompletionMessageParams>,
+    messages: Vec<ChatMessage>,
     /// ID of the model to use.
     model: String,
     /// Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing
@@ -356,29 +360,6 @@ pub(crate) struct ChatCompletionCreateParams {
     // Not supported yet:
     // tools
     // tool_choices
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize, Debug)]
-#[serde(tag = "role", rename_all = "lowercase")]
-enum ChatCompletionMessageParams {
-    System {
-        content: String,
-        name: Option<String>,
-    },
-    User {
-        content: String,
-        name: Option<String>,
-    },
-    Assistant {
-        content: String,
-        // Not supported yet:
-        // tool_calls
-    },
-    Tool {
-        content: String,
-        tool_call_id: String,
-    },
 }
 
 #[derive(Serialize, Debug)]
