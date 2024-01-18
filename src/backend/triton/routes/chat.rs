@@ -9,6 +9,7 @@ use axum::extract::State;
 use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
+use openai_dive::v1::resources::chat::Role;
 use openai_dive::v1::resources::shared::Usage;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -463,16 +464,6 @@ struct ChatCompletionChunkDelta {
     content: Option<String>,
     // Not supported yet:
     // tool_calls
-}
-
-#[allow(dead_code)]
-#[derive(Serialize, Debug)]
-#[serde(rename_all = "snake_case")]
-enum Role {
-    System,
-    User,
-    Assistant,
-    Tool,
 }
 
 fn default_frequency_penalty() -> f32 {
