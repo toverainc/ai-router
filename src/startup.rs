@@ -14,8 +14,9 @@ use tower_http::{
 use tracing::Level;
 
 use crate::config::Config;
-use crate::routes;
+use crate::backend::triton::routes as triton_routes;
 use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
+use crate::routes;
 
 /// Start axum server
 ///
@@ -31,10 +32,10 @@ pub async fn run_server(config: Config) -> anyhow::Result<()> {
         .context("failed to connect triton endpoint")?;
 
     let app = Router::new()
-        .route("/v1/completions", post(routes::compat_completions))
+        .route("/v1/completions", post(triton_routes::completions::compat_completions))
         .route(
             "/v1/chat/completions",
-            post(routes::compat_chat_completions),
+            post(triton_routes::chat::compat_chat_completions),
         )
         .route("/health_check", get(routes::health_check))
         .route("/metrics", get(|| async move { metric_handle.render() }))
