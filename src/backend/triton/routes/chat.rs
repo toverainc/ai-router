@@ -10,11 +10,8 @@ use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use openai_dive::v1::resources::chat::{
-    ChatCompletionChunkChoice,
-    ChatMessage,
-    ChatMessageContent,
-    DeltaChatMessage,
-    Role
+    ChatCompletionChunkChoice, ChatCompletionChunkResponse, ChatMessage, ChatMessageContent,
+    DeltaChatMessage, Role,
 };
 use openai_dive::v1::resources::shared::{FinishReason, Usage};
 use serde::{Deserialize, Serialize};
@@ -53,7 +50,7 @@ async fn chat_completions_stream(
     Json(request): Json<ChatCompletionCreateParams>,
 ) -> Result<Sse<impl Stream<Item = anyhow::Result<Event>>>, AppError> {
     let id = format!("cmpl-{}", Uuid::new_v4());
-    let created = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
+    let created = u32::try_from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())?;
 
     let model_name = request.model.clone();
     let request = build_triton_request(request)?;
@@ -99,14 +96,14 @@ async fn chat_completions_stream(
                     continue;
                 }
                 content_prev = content.clone();
-                let response = ChatCompletionChunk {
+                let response = ChatCompletionChunkResponse {
                     id: id.clone(),
                     object: "text_completion".to_string(),
                     created,
                     model: model_name.clone(),
                     system_fingerprint: None,
                     choices: vec![ChatCompletionChunkChoice {
-                        index: 0,
+                        index: Some(0),
                         delta: DeltaChatMessage {
                             role: Some(Role::Assistant),
                             content: Some(content_new),
@@ -118,14 +115,14 @@ async fn chat_completions_stream(
                 yield Event::default().json_data(response).unwrap();
             }
         }
-        let response = ChatCompletionChunk {
+        let response = ChatCompletionChunkResponse {
             id,
             object: "text_completion".to_string(),
             created,
             model: model_name,
             system_fingerprint: None,
             choices: vec![ChatCompletionChunkChoice {
-                index: 0,
+                index: Some(0),
                 delta: DeltaChatMessage {
                     role: None,
                     content: None,
@@ -415,23 +412,6 @@ struct ChatCompletionChoice {
     index: usize,
     message: ChatMessage,
     finish_reason: Option<FinishReason>,
-}
-
-#[derive(Serialize, Debug)]
-struct ChatCompletionChunk {
-    /// A unique identifier for the chat completion. Each chunk has the same ID.
-    id: String,
-    /// The object type, which is always chat.completion.chunk.
-    object: String,
-    /// The Unix timestamp (in seconds) of when the chat completion was created. Each chunk has
-    /// the same timestamp.
-    created: u64,
-    /// The model used for completion.
-    model: String,
-    /// This fingerprint represents the backend configuration that the model runs with.
-    system_fingerprint: Option<String>,
-    /// A list of chat completion choices. Can be more than one if n is greater than 1.
-    choices: Vec<ChatCompletionChunkChoice>,
 }
 
 fn default_frequency_penalty() -> f32 {
