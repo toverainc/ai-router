@@ -49,13 +49,19 @@ parser.add_argument(
     help="URL including port and version",
 )
 
+parser.add_argument(
+    "-k",
+    "--openai-api-key",
+    type=str,
+    default="test",
+    required=False,
+    help="API KEY",
+)
+
 FLAGS = parser.parse_args()
 
-# We don't really use a key - yet
-openai_api_key = "test"
-
 client = OpenAI(
-    api_key=openai_api_key,
+    api_key=FLAGS.openai_api_key,
     base_url=FLAGS.url,
 )
 
