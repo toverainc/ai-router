@@ -9,7 +9,13 @@ use axum::extract::State;
 use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
-use openai_dive::v1::resources::chat::{ChatMessage, ChatMessageContent, DeltaChatMessage, Role};
+use openai_dive::v1::resources::chat::{
+    ChatCompletionChunkChoice,
+    ChatMessage,
+    ChatMessageContent,
+    DeltaChatMessage,
+    Role
+};
 use openai_dive::v1::resources::shared::{FinishReason, Usage};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -426,13 +432,6 @@ struct ChatCompletionChunk {
     system_fingerprint: Option<String>,
     /// A list of chat completion choices. Can be more than one if n is greater than 1.
     choices: Vec<ChatCompletionChunkChoice>,
-}
-
-#[derive(Serialize, Debug)]
-struct ChatCompletionChunkChoice {
-    index: usize,
-    delta: DeltaChatMessage,
-    finish_reason: Option<FinishReason>,
 }
 
 fn default_frequency_penalty() -> f32 {
