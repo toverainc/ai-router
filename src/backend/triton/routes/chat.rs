@@ -10,8 +10,8 @@ use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use openai_dive::v1::resources::chat::{
-    ChatCompletionChoice, ChatCompletionChunkChoice, ChatCompletionChunkResponse, ChatMessage,
-    ChatMessageContent, DeltaChatMessage, Role,
+    ChatCompletionChoice, ChatCompletionChunkChoice, ChatCompletionChunkResponse,
+    ChatCompletionResponseFormat, ChatMessage, ChatMessageContent, DeltaChatMessage, Role,
 };
 use openai_dive::v1::resources::shared::{FinishReason, Usage};
 use serde::{Deserialize, Serialize};
@@ -331,7 +331,7 @@ pub(crate) struct ChatCompletionCreateParams {
     /// An object specifying the format that the model must output.
     /// Setting to { "type": "json_object" } enables JSON mode, which guarantees the message the
     /// model generates is valid JSON.
-    response_format: Option<ResponseFormat>,
+    response_format: Option<ChatCompletionResponseFormat>,
     /// If specified, our system will make a best effort to sample deterministically, such that
     /// repeated requests with the same seed and parameters should return the same result.
     seed: Option<usize>,
@@ -379,14 +379,6 @@ enum ChatCompletionMessageParams {
         content: String,
         tool_call_id: String,
     },
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize, Debug)]
-#[serde(tag = "type", rename_all = "snake_case")]
-enum ResponseFormat {
-    Text,
-    JsonObject,
 }
 
 #[derive(Serialize, Debug)]
