@@ -9,7 +9,7 @@ use axum::extract::State;
 use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
-use openai_dive::v1::resources::chat::{ChatMessage, ChatMessageContent, Role};
+use openai_dive::v1::resources::chat::{ChatMessage, ChatMessageContent, DeltaChatMessage, Role};
 use openai_dive::v1::resources::shared::{FinishReason, Usage};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -101,9 +101,10 @@ async fn chat_completions_stream(
                     system_fingerprint: None,
                     choices: vec![ChatCompletionChunkChoice {
                         index: 0,
-                        delta: ChatCompletionChunkDelta {
+                        delta: DeltaChatMessage {
                             role: Some(Role::Assistant),
                             content: Some(content_new),
+                            tool_calls: None,
                         },
                         finish_reason: None,
                     }],
@@ -119,9 +120,10 @@ async fn chat_completions_stream(
             system_fingerprint: None,
             choices: vec![ChatCompletionChunkChoice {
                 index: 0,
-                delta: ChatCompletionChunkDelta {
+                delta: DeltaChatMessage {
                     role: None,
                     content: None,
+                    tool_calls: None,
                 },
                 finish_reason: Some(FinishReason::StopSequenceReached),
             }],
@@ -429,20 +431,8 @@ struct ChatCompletionChunk {
 #[derive(Serialize, Debug)]
 struct ChatCompletionChunkChoice {
     index: usize,
-    delta: ChatCompletionChunkDelta,
+    delta: DeltaChatMessage,
     finish_reason: Option<FinishReason>,
-}
-
-#[derive(Serialize, Debug)]
-struct ChatCompletionChunkDelta {
-    /// The role of the author of this message.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    role: Option<Role>,
-    /// The contents of the chunk message.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    content: Option<String>,
-    // Not supported yet:
-    // tool_calls
 }
 
 fn default_frequency_penalty() -> f32 {
