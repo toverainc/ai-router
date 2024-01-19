@@ -88,8 +88,9 @@ if FLAGS.stream:
             output_start_time = time.time()
         tokens += 1
         if chunk.choices[0].delta.content is not None and len(chunk.choices[0].delta.content) > 0:
-            print(chunk.choices[0].delta.content)
-            print("****************")
+            print(chunk.choices[0].delta.content, end="")
+    print()
+    print("****************")
 else:
     print("Chat completion results:")
     print(chat_completion.choices[0].message.content)
