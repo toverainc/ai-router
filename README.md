@@ -1,7 +1,9 @@
-# AI Router - OpenAI-compatible API for Nvidia Triton Inference Server
+# AI Router - AI Model Flexibility
 
 Provide [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) and [NVIDIA Triton Inference Server](https://github.com/triton-inference-server/tensorrtllm_backend)
 with an OpenAI-compatible API. This allows you to integrate with [langchain](https://github.com/langchain-ai/langchain) and other OpenAI compatible clients.
+
+Also supports OpenAI and other OpenAI API compliant backends.
 
 ## Overall Design/Functionality/Architecture/Goals
 AI Router presents an OpenAI API compatible HTTP interface to clients. AI Router can then take input from OpenAI API clients across any supported [OpenAI API endpoint](https://platform.openai.com/docs/api-reference/) (functionality) and route to any number of backends with translation across protocol, model naming, and prompt formatting. Currently supports OpenAI API compatible backends or Nvidia Triton Inference server via gRPC.
