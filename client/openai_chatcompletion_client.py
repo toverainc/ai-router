@@ -87,7 +87,7 @@ if FLAGS.stream:
         if output_start_time is None:
             output_start_time = time.time()
         tokens += 1
-        if chunk.choices[0].delta.content is not None:
+        if chunk.choices[0].delta.content is not None and len(chunk.choices[0].delta.content) > 0:
             print(chunk.choices[0].delta.content)
             print("****************")
 else:
