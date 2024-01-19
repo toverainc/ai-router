@@ -40,6 +40,16 @@ parser.add_argument(
     help="Model name",
 )
 
+# Triton is faster than Python/the TTY can draw so this inserts a newline per chunk to confirm per-chunk stream
+parser.add_argument(
+    "-n",
+    "--newline",
+    action="store_true",
+    default=False,
+    required=False,
+    help="Insert newline after each received chunk to show per-token output more clearly",
+)
+
 parser.add_argument(
     "-u",
     "--url",
@@ -88,7 +98,10 @@ if FLAGS.stream:
             output_start_time = time.time()
         tokens += 1
         if chunk.choices[0].delta.content is not None and len(chunk.choices[0].delta.content) > 0:
-            print(chunk.choices[0].delta.content, end="")
+            if FLAGS.newline:
+                print(f'{chunk.choices[0].delta.content}\n', end="")
+            else:
+                print(chunk.choices[0].delta.content, end="")
     print()
     print("****************")
 else:
