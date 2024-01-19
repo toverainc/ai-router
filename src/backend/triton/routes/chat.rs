@@ -59,6 +59,8 @@ async fn chat_completions_stream(
             .context("failed to call triton grpc method model_stream_infer")?
             .into_inner();
 
+        let mut content_prev = String::new();
+
         while let Some(response) = stream.message().await? {
             if !response.error_message.is_empty() {
                 tracing::error!("received error message from triton: {}", response.error_message);
@@ -84,6 +86,8 @@ async fn chat_completions_stream(
                 .collect::<String>();
 
             if !content.is_empty() {
+                let content_new = content.replace(&content_prev, "");
+                content_prev = content.clone();
                 let response = ChatCompletionChunk {
                     id: id.clone(),
                     object: "text_completion".to_string(),
@@ -94,7 +98,7 @@ async fn chat_completions_stream(
                         index: 0,
                         delta: ChatCompletionChunkDelta {
                             role: Some(Role::Assistant),
-                            content: Some(content),
+                            content: Some(content_new),
                         },
                         finish_reason: None,
                     }],
