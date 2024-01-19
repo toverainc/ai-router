@@ -87,6 +87,9 @@ async fn chat_completions_stream(
 
             if !content.is_empty() {
                 let content_new = content.replace(&content_prev, "");
+                if content_new.is_empty() {
+                    continue;
+                }
                 content_prev = content.clone();
                 let response = ChatCompletionChunk {
                     id: id.clone(),
