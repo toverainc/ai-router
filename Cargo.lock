@@ -51,7 +51,6 @@ dependencies = [
  "bytes",
  "clap",
  "figment",
- "hyper 0.14.28",
  "opentelemetry",
  "opentelemetry-jaeger",
  "opentelemetry-otlp",
