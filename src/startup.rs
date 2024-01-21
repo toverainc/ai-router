@@ -37,8 +37,6 @@ pub async fn run_server(config: Config) -> anyhow::Result<()> {
             "/v1/chat/completions",
             post(triton_routes::chat::compat_chat_completions),
         )
-        .route("/health_check", get(routes::health_check))
-        .route("/metrics", get(|| async move { metric_handle.render() }))
         .with_state(grpc_client)
         .layer(prometheus_layer)
         .layer(OtelInResponseLayer)
@@ -60,7 +58,9 @@ pub async fn run_server(config: Config) -> anyhow::Result<()> {
                         ),
                 )
                 .propagate_x_request_id(),
-        );
+        )
+        .route("/health_check", get(routes::health_check))
+        .route("/metrics", get(|| async move { metric_handle.render() }));
 
     let address = format!("{}:{}", config.host, config.port);
     tracing::info!("Starting server at {}", address);
