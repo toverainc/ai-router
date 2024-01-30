@@ -8,7 +8,12 @@ use tracing_log::LogTracer;
 use tracing_subscriber::fmt::MakeWriter;
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry};
 
-fn init_tracer(otlp_endpoint: String) -> Result<sdktrace::Tracer, TraceError> {
+use crate::config::AiRouterDaemon;
+
+fn init_tracer(airouter_daemon_config: &AiRouterDaemon) -> Result<sdktrace::Tracer, TraceError> {
+    let Some(otlp_endpoint) = airouter_daemon_config.otlp_endpoint.clone() else {
+        return Err(TraceError::Other("otlp_endpoint not set".into()));
+    };
     opentelemetry::global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
     opentelemetry_otlp::new_pipeline()
         .tracing()
@@ -19,6 +24,10 @@ fn init_tracer(otlp_endpoint: String) -> Result<sdktrace::Tracer, TraceError> {
         )
         .with_trace_config(sdktrace::config().with_resource(Resource::new(vec![
             opentelemetry::KeyValue::new("service.name", "ai_router"),
+            opentelemetry::KeyValue::new(
+                "service.instance.id",
+                airouter_daemon_config.instance_id.clone(),
+            ),
         ])))
         .install_batch(runtime::Tokio)
 }
@@ -38,7 +47,7 @@ pub fn init_subscriber<Sink>(
     name: &str,
     env_filter: &str,
     sink: Sink,
-    otlp_endpoint: Option<String>,
+    airouter_daemon_config: &AiRouterDaemon,
 ) where
     Sink: for<'a> MakeWriter<'a> + Send + Sync + 'static,
 {
@@ -53,8 +62,7 @@ pub fn init_subscriber<Sink>(
         .with(JsonStorageLayer)
         .with(formatting_layer);
 
-    if let Some(otlp_endpoint) = otlp_endpoint {
-        let tracer = init_tracer(otlp_endpoint).expect("unable to initialize tracer");
+    if let Ok(tracer) = init_tracer(airouter_daemon_config) {
         let tracer_layer = tracing_opentelemetry::layer().with_tracer(tracer);
         set_global_default(registry.with(tracer_layer)).expect("Failed to set subscriber");
     } else {

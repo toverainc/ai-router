@@ -1,0 +1,96 @@
+# AI Router config
+title = "ai-router example"
+
+# AI Router daemon config
+[daemon]
+# OpenTelemetry service instance ID
+# Random UUID v4 if unset
+#instance_id = "my-ai-router"
+
+listen_ip = "192.168.0.1"
+listen_port = 3000
+
+# API key(s) - can be a single string, an array of strings, or unset
+# If unset, any API key in client requests will be accepted
+#api_key = "my_simple_key"
+#api_key = ["my_key", "another_key", "yet_another_key"]
+
+# OpenTelemtry Protocol endpoint
+#otlp_endpoint = "http://my.otlp.endpoint:4317"
+
+# Triton/OpenAI backends
+[backends]
+
+[backends.my_triton_instance]
+# Backend type - can be Triton or OpenAI
+type = "triton"
+
+# Base URL for Triton or OpenAI endpoint
+base_url = "http://my.triton.host.or.ip:8001"
+
+# Use this backend by if matched model does not have a backend configured
+default = true
+
+# OpenAI example
+[backends.openai]
+type = "openai"
+base_url = "https://api.openai.com/v1"
+default = false
+# API key to use when contacting the backend
+# If unset, pass the API key received by the client
+api_key = "my_openai_api_key"
+
+# vLLM example
+[backends.vllm]
+type = "openai"
+base_url = "http://192.168.0.5:8000/v1" # vLLM default
+default = false
+# This is vLLM default
+api_key = "EMPTY"
+
+# HF TGI example
+[backends.hf_tgi]
+type = "openai"
+base_url = "http://192.168.0.5:8000/v1"
+default = false
+api_key = "EMPTY"
+
+# HF TEI example
+[backends.hf_tei]
+type = "openai"
+base_url = "http://192.168.0.5:8000/v1"
+default = false
+# Return error if client sends an input larger than this
+max_input = 512
+
+[models]
+
+# Chat completions
+
+# Mistral example
+# Model names containing . should be quoted!
+[models.chat_completions."Mistral-7B-Instruct-v0.2"]
+# Select backend based on model name
+backend = "my_triton_instance"
+# Override model in request sent to backend
+backend_model = "some_other_name_in_triton"
+# Prompt format
+prompt_format = "mistral"
+# Select this model if model name in client request is not defined in config
+default = true
+# Return error if client sends an input larger than this
+max_input = 32768
+
+# Embeddings
+
+# BGE example
+[models.embeddings."bge-large-en-v1.5"]
+backend = "my_triton_instance"
+backend_model = "bge-large-en-v1.5"
+default = true
+max_input = 512
+
+# OpenAI example
+[models.embeddings.text-embedding-ada-002]
+backend = "openai"
+default = false

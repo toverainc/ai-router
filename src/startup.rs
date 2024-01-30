@@ -15,7 +15,7 @@ use tracing::Level;
 
 use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
 use crate::backend::triton::routes as triton_routes;
-use crate::config::Config;
+use crate::config::{AiRouterArguments, AiRouterConfigFile};
 use crate::routes;
 
 /// Start axum server
@@ -24,10 +24,13 @@ use crate::routes;
 /// - when we're unable to connect to the Triton endpoint
 /// - when we're unable to bind the `TCPListener` for the axum server
 /// - when we're unable to start the axum server
-pub async fn run_server(config: Config) -> anyhow::Result<()> {
+pub async fn run_server(
+    args: &AiRouterArguments,
+    config_file: &AiRouterConfigFile,
+) -> anyhow::Result<()> {
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
 
-    let grpc_client = GrpcInferenceServiceClient::connect(config.triton_endpoint)
+    let grpc_client = GrpcInferenceServiceClient::connect(args.triton_endpoint.clone())
         .await
         .context("failed to connect triton endpoint")?;
 
@@ -65,7 +68,10 @@ pub async fn run_server(config: Config) -> anyhow::Result<()> {
                 .propagate_x_request_id(),
         );
 
-    let address = format!("{}:{}", config.host, config.port);
+    let address = format!(
+        "{}:{}",
+        config_file.daemon.listen_ip, config_file.daemon.listen_port
+    );
     tracing::info!("Starting server at {}", address);
 
     let listener = TcpListener::bind(address).await?;
