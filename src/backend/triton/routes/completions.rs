@@ -17,10 +17,10 @@ use tracing;
 use tracing::instrument;
 use uuid::Uuid;
 
-use crate::errors::AppError;
 use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
 use crate::backend::triton::request::{Builder, InferTensorData};
 use crate::backend::triton::ModelInferRequest;
+use crate::errors::AppError;
 use crate::utils::{deserialize_bytes_tensor, string_or_seq_string};
 
 #[instrument(name = "completions", skip(client, request))]
