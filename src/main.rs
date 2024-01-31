@@ -17,5 +17,5 @@ async fn main() -> anyhow::Result<()> {
 
     telemetry::init_subscriber("ai_router", "info", std::io::stdout, &config_file.daemon);
 
-    startup::run_server(&args, &config_file).await
+    startup::run_server(&config_file).await
 }

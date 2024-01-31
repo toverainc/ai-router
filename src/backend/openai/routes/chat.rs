@@ -14,7 +14,7 @@ use crate::errors::AppError;
     skip(client, request)
 )]
 pub(crate) async fn wrap_chat_completion(
-    client: axum::extract::State<Client>,
+    client: Client,
     request: Json<ChatCompletionParameters>,
 ) -> Response {
     if request.stream.unwrap_or(false) {
@@ -29,7 +29,7 @@ pub(crate) async fn wrap_chat_completion(
     skip(client, request)
 )]
 async fn chat_completion(
-    client: axum::extract::State<Client>,
+    client: Client,
     Json(request): Json<ChatCompletionParameters>,
 ) -> Result<Json<ChatCompletionResponse>, AppError> {
     let response = client.chat().create(request).await.unwrap();
@@ -41,7 +41,7 @@ async fn chat_completion(
     skip(client, request)
 )]
 fn chat_completion_stream(
-    client: axum::extract::State<Client>,
+    client: Client,
     Json(request): Json<ChatCompletionParameters>,
 ) -> Sse<impl Stream<Item = anyhow::Result<Event>>> {
     let response_stream = try_stream! {

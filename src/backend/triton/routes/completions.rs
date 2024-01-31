@@ -5,7 +5,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::Context;
 use async_stream::{stream, try_stream};
-use axum::extract::State;
 use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -26,7 +25,7 @@ use crate::utils::{deserialize_bytes_tensor, string_or_seq_string};
 
 #[instrument(name = "completions", skip(client, request))]
 pub(crate) async fn compat_completions(
-    client: State<GrpcInferenceServiceClient<Channel>>,
+    client: GrpcInferenceServiceClient<Channel>,
     request: Json<CompletionCreateParams>,
 ) -> Response {
     tracing::info!("request: {:?}", request);
@@ -40,7 +39,7 @@ pub(crate) async fn compat_completions(
 
 #[instrument(name = "streaming completions", skip(client, request))]
 async fn completions_stream(
-    State(mut client): State<GrpcInferenceServiceClient<Channel>>,
+    mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
 ) -> Result<Sse<impl Stream<Item = anyhow::Result<Event>>>, AppError> {
     let id = format!("cmpl-{}", Uuid::new_v4());
@@ -123,7 +122,7 @@ async fn completions_stream(
 
 #[instrument(name = "non-streaming completions", skip(client, request), err(Debug))]
 async fn completions(
-    State(mut client): State<GrpcInferenceServiceClient<Channel>>,
+    mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
 ) -> Result<Json<Completion>, AppError> {
     let model_name = request.model.clone();
@@ -252,7 +251,7 @@ fn build_triton_request(request: CompletionCreateParams) -> anyhow::Result<Model
 #[derive(Deserialize, Debug)]
 pub(crate) struct CompletionCreateParams {
     /// ID of the model to use.
-    model: String,
+    pub model: String,
     /// The prompt(s) to generate completions for, encoded as a string, array of strings, array of
     /// tokens, or array of token arrays.
     #[serde(deserialize_with = "string_or_seq_string")]

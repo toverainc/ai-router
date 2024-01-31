@@ -111,8 +111,6 @@ pub struct AiRouterModel {
 pub struct AiRouterArguments {
     #[arg(long, short = 'c', default_value_t = String::from(DEFAULT_CONFIG_FILE))]
     pub config_file: String,
-    #[arg(long, short, default_value_t = String::from("http://localhost:16001"))]
-    pub triton_endpoint: String,
 }
 
 fn default_api_key() -> Vec<String> {

@@ -1,9 +1,12 @@
-use anyhow::Context;
+use std::collections::HashMap;
+
 use axum::routing::{get, post};
 use axum::Router;
 use axum_prometheus::PrometheusMetricLayer;
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
+use openai_dive::v1::api::Client as OpenAIClient;
 use tokio::net::TcpListener;
+use tonic::transport::Channel;
 use tower::ServiceBuilder;
 use tower_http::request_id::MakeRequestUuid;
 use tower_http::{
@@ -13,10 +16,22 @@ use tower_http::{
 };
 use tracing::Level;
 
+use crate::backend::main::init_backends;
 use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
-use crate::backend::triton::routes as triton_routes;
-use crate::config::{AiRouterArguments, AiRouterConfigFile};
+use crate::config::AiRouterConfigFile;
 use crate::routes;
+
+#[derive(Clone, Debug)]
+pub struct AppState {
+    pub backends: HashMap<String, BackendTypes<OpenAIClient, GrpcInferenceServiceClient<Channel>>>,
+    pub config: AiRouterConfigFile,
+}
+
+#[derive(Clone, Debug)]
+pub enum BackendTypes<O, T> {
+    OpenAI(O),
+    Triton(T),
+}
 
 /// Start axum server
 ///
@@ -24,28 +39,21 @@ use crate::routes;
 /// - when we're unable to connect to the Triton endpoint
 /// - when we're unable to bind the `TCPListener` for the axum server
 /// - when we're unable to start the axum server
-pub async fn run_server(
-    args: &AiRouterArguments,
-    config_file: &AiRouterConfigFile,
-) -> anyhow::Result<()> {
+pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> {
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
 
-    let grpc_client = GrpcInferenceServiceClient::connect(args.triton_endpoint.clone())
-        .await
-        .context("failed to connect triton endpoint")?;
+    let backends = init_backends(config_file).await;
+    let state = AppState {
+        backends,
+        config: config_file.clone(),
+    };
 
     let app = Router::new()
-        .route(
-            "/v1/completions",
-            post(triton_routes::completions::compat_completions),
-        )
-        .route(
-            "/v1/chat/completions",
-            post(triton_routes::chat::compat_chat_completions),
-        )
+        .route("/v1/chat/completions", post(routes::chat::completion))
+        .route("/v1/completions", post(routes::completions::completion))
         .route("/health_check", get(routes::health_check))
         .route("/metrics", get(|| async move { metric_handle.render() }))
-        .with_state(grpc_client)
+        .with_state(state)
         .layer(prometheus_layer)
         .layer(OtelInResponseLayer)
         .layer(OtelAxumLayer::default())

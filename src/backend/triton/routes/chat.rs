@@ -4,7 +4,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::Context;
 use async_stream::{stream, try_stream};
-use axum::extract::State;
 use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -29,7 +28,7 @@ use crate::utils::deserialize_bytes_tensor;
 
 #[instrument(name = "chat_completions", skip(client, request))]
 pub(crate) async fn compat_chat_completions(
-    client: State<GrpcInferenceServiceClient<Channel>>,
+    client: GrpcInferenceServiceClient<Channel>,
     request: Json<ChatCompletionParameters>,
 ) -> Response {
     tracing::info!("request: {:?}", request);
@@ -45,7 +44,7 @@ pub(crate) async fn compat_chat_completions(
 
 #[instrument(name = "streaming chat completions", skip(client, request))]
 async fn chat_completions_stream(
-    State(mut client): State<GrpcInferenceServiceClient<Channel>>,
+    mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<ChatCompletionParameters>,
 ) -> Result<Sse<impl Stream<Item = anyhow::Result<Event>>>, AppError> {
     let id = format!("cmpl-{}", Uuid::new_v4());
@@ -145,7 +144,7 @@ async fn chat_completions_stream(
     err(Debug)
 )]
 async fn chat_completions(
-    State(mut client): State<GrpcInferenceServiceClient<Channel>>,
+    mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<ChatCompletionParameters>,
 ) -> Result<Json<ChatCompletionResponse>, AppError> {
     let model_name = request.model.clone();
