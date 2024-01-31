@@ -11,10 +11,11 @@ use axum::response::{IntoResponse, Response};
 use axum::Json;
 use openai_dive::v1::resources::chat::{
     ChatCompletionChoice, ChatCompletionChunkChoice, ChatCompletionChunkResponse,
-    ChatCompletionResponseFormat, ChatMessage, ChatMessageContent, DeltaChatMessage, Role,
+    ChatCompletionResponse, ChatCompletionResponseFormat, ChatMessage, ChatMessageContent,
+    DeltaChatMessage, Role,
 };
 use openai_dive::v1::resources::shared::{FinishReason, Usage};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::json;
 use tonic::codegen::tokio_stream::Stream;
 use tonic::transport::Channel;
@@ -148,7 +149,7 @@ async fn chat_completions_stream(
 async fn chat_completions(
     State(mut client): State<GrpcInferenceServiceClient<Channel>>,
     Json(request): Json<ChatCompletionCreateParams>,
-) -> Result<Json<ChatCompletion>, AppError> {
+) -> Result<Json<ChatCompletionResponse>, AppError> {
     let model_name = request.model.clone();
     let request = build_triton_request(request)?;
     let request_stream = stream! { yield request };
@@ -180,10 +181,10 @@ async fn chat_completions(
         contents.push(content);
     }
 
-    Ok(Json(ChatCompletion {
+    Ok(Json(ChatCompletionResponse {
         id: format!("cmpl-{}", Uuid::new_v4()),
         object: "text_completion".to_string(),
-        created: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
+        created: u32::try_from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())?,
         model: model_name,
         system_fingerprint: None,
         choices: vec![ChatCompletionChoice {
@@ -199,11 +200,11 @@ async fn chat_completions(
         }],
         // Not supported yet, need triton to return usage stats
         // but add a fake one to make LangChain happy
-        usage: Some(Usage {
+        usage: Usage {
             prompt_tokens: 0,
             completion_tokens: Some(0),
             total_tokens: 0,
-        }),
+        },
     }))
 }
 
@@ -360,24 +361,6 @@ pub(crate) struct ChatCompletionCreateParams {
     // Not supported yet:
     // tools
     // tool_choices
-}
-
-#[derive(Serialize, Debug)]
-struct ChatCompletion {
-    /// A unique identifier for the completion.
-    id: String,
-    /// The object type, which is always "chat.completion"
-    object: String,
-    /// The Unix timestamp (in seconds) of when the completion was created.
-    created: u64,
-    /// The model used for completion.
-    model: String,
-    /// This fingerprint represents the backend configuration that the model runs with.
-    system_fingerprint: Option<String>,
-    /// The list of completion choices the model generated for the input prompt.
-    choices: Vec<ChatCompletionChoice>,
-    /// Usage statistics for the completion request.
-    usage: Option<Usage>,
 }
 
 fn default_frequency_penalty() -> f32 {
