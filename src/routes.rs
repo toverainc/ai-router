@@ -1,5 +1,6 @@
 pub(crate) mod chat;
 pub(crate) mod completions;
+pub(crate) mod embeddings;
 
 mod health_check;
 mod models;

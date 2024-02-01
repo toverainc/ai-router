@@ -51,6 +51,7 @@ pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> 
     let app = Router::new()
         .route("/v1/chat/completions", post(routes::chat::completion))
         .route("/v1/completions", post(routes::completions::completion))
+        .route("/v1/embeddings", post(routes::embeddings::embed))
         .route("/v1/models", get(routes::get))
         .route("/health_check", get(routes::health_check))
         .route("/metrics", get(|| async move { metric_handle.render() }))
