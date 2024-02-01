@@ -11,10 +11,13 @@ use crate::startup::{AppState, BackendTypes};
 #[instrument(name = "routes::completion::completions", skip(state, request))]
 pub async fn completion(
     State(state): State<AppState>,
-    request: Json<CompletionCreateParams>,
+    mut request: Json<CompletionCreateParams>,
 ) -> Response {
     if let Some(model) = state.config.models.get(&AiRouterModelType::ChatCompletions) {
         if let Some(model) = model.get(&request.model) {
+            if let Some(backend_model) = model.backend_model.clone() {
+                request.model = backend_model;
+            }
             match state.backends.get(&model.backend).unwrap() {
                 BackendTypes::OpenAI(_) => {
                     return "legacy completions not supported in OpenAI backend".into_response();
