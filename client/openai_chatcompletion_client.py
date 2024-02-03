@@ -110,6 +110,7 @@ else:
 
 timing = time.time()
 response_time = timing - start_time
+response_time_ms = response_time * 1000
 
 # Tokens per second
 # This may seem impossible without getting direct access to token output and having the tokenizer locally
@@ -118,9 +119,10 @@ tps = tokens / response_time
 
 # print the time delay
 if FLAGS.stream:
-    first_response_time = timing - output_start_time
+    first_response_time = output_start_time - start_time
+    first_response_time = first_response_time * 1000
     # TODO: Currently broken
-    print(f"Start of response {first_response_time:.2f} seconds after request")
+    print(f"Start of response: {first_response_time:.2f} ms after request")
     print(f"Total tokens: {tokens}")
     print(f"Tokens per second: {tps:.2f}")
-print(f"Full response received {response_time:.2f} seconds after request")
+print(f"Full response received {response_time_ms:.2f} ms after request")
