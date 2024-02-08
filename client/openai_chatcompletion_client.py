@@ -77,7 +77,7 @@ client = OpenAI(
 
 # We don't do prompt formatting in the proxy - yet
 # Mistral Instruct
-input = f'<s>[INST] {FLAGS.input} [/INST]'
+input = f'[INST] {FLAGS.input} [/INST]'
 
 start_time = time.time()
 chat_completion = client.chat.completions.create(
