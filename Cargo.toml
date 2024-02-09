@@ -9,7 +9,7 @@ tower = "0.4.13"
 tower-http = { version = "0.5.1", features = ["trace", "request-id", "util"] }
 tokio = { version = "1.36.0", features = ["full"] }
 async-stream = "0.3.5"
-tonic = "0.10.2"
+tonic = "0.11.0"
 prost = "0.12.1"
 prost-types = "0.12.1"
 anyhow = { version = "1.0.75", features = ["backtrace"] }
