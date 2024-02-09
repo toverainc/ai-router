@@ -10,8 +10,8 @@ use axum::response::{IntoResponse, Response};
 use axum::Json;
 use openai_dive::v1::resources::chat::{
     ChatCompletionChoice, ChatCompletionChunkChoice, ChatCompletionChunkResponse,
-    ChatCompletionResponse, ChatMessage, ChatMessageContent, DeltaChatMessage, Role,
-    StreamChatCompletionParameters,
+    ChatCompletionParameters, ChatCompletionResponse, ChatMessage, ChatMessageContent,
+    DeltaChatMessage, Role,
 };
 use openai_dive::v1::resources::shared::{FinishReason, StopToken, Usage};
 use serde_json::json;
@@ -30,11 +30,11 @@ use crate::utils::deserialize_bytes_tensor;
 #[instrument(name = "chat_completions", skip(client, request))]
 pub(crate) async fn compat_chat_completions(
     client: State<GrpcInferenceServiceClient<Channel>>,
-    request: Json<StreamChatCompletionParameters>,
+    request: Json<ChatCompletionParameters>,
 ) -> Response {
     tracing::info!("request: {:?}", request);
 
-    if request.stream {
+    if request.stream.unwrap_or(false) {
         chat_completions_stream(client, request)
             .await
             .into_response()
@@ -46,7 +46,7 @@ pub(crate) async fn compat_chat_completions(
 #[instrument(name = "streaming chat completions", skip(client, request))]
 async fn chat_completions_stream(
     State(mut client): State<GrpcInferenceServiceClient<Channel>>,
-    Json(request): Json<StreamChatCompletionParameters>,
+    Json(request): Json<ChatCompletionParameters>,
 ) -> Result<Sse<impl Stream<Item = anyhow::Result<Event>>>, AppError> {
     let id = format!("cmpl-{}", Uuid::new_v4());
     let created = u32::try_from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())?;
@@ -146,7 +146,7 @@ async fn chat_completions_stream(
 )]
 async fn chat_completions(
     State(mut client): State<GrpcInferenceServiceClient<Channel>>,
-    Json(request): Json<StreamChatCompletionParameters>,
+    Json(request): Json<ChatCompletionParameters>,
 ) -> Result<Json<ChatCompletionResponse>, AppError> {
     let model_name = request.model.clone();
     let request = build_triton_request(request)?;
@@ -194,21 +194,19 @@ async fn chat_completions(
                 tool_call_id: None,
                 content: ChatMessageContent::Text(contents.into_iter().collect()),
             },
-            finish_reason: FinishReason::StopSequenceReached,
+            finish_reason: Some(FinishReason::StopSequenceReached),
         }],
         // Not supported yet, need triton to return usage stats
         // but add a fake one to make LangChain happy
-        usage: Usage {
+        usage: Some(Usage {
             prompt_tokens: 0,
             completion_tokens: Some(0),
             total_tokens: 0,
-        },
+        }),
     }))
 }
 
-fn build_triton_request(
-    request: StreamChatCompletionParameters,
-) -> anyhow::Result<ModelInferRequest> {
+fn build_triton_request(request: ChatCompletionParameters) -> anyhow::Result<ModelInferRequest> {
     let chat_history = build_chat_history(request.messages);
     tracing::debug!("chat history after formatting: {}", chat_history);
 
@@ -227,7 +225,7 @@ fn build_triton_request(
         .input(
             "stream",
             [1, 1],
-            InferTensorData::Bool(vec![request.stream]),
+            InferTensorData::Bool(vec![request.stream.unwrap_or(false)]),
         )
         .output("text_output");
 
@@ -255,14 +253,13 @@ fn build_triton_request(
         );
     }
 
-    // `openai_dive::v1::resources::chat::StreamChatCompletionParameters` does not have seed
-    // if request.seed.is_some() {
-    //     builder = builder.input(
-    //         "random_seed",
-    //         [1, 1],
-    //         InferTensorData::UInt64(vec![request.seed.unwrap() as u64]),
-    //     );
-    // }
+    if request.seed.is_some() {
+        builder = builder.input(
+            "random_seed",
+            [1, 1],
+            InferTensorData::UInt64(vec![u64::from(request.seed.unwrap())]),
+        );
+    }
 
     if request.stop.is_some() {
         let stop_words = match request.stop.unwrap() {
