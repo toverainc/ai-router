@@ -2,6 +2,15 @@
 name = "ai-router"
 version = "0.1.0"
 edition = "2021"
+default-run = "ai-router"
+
+[[bin]]
+name = "ai-router"
+path = "src/main.rs"
+
+[[bin]]
+name = "embed-client"
+path = "src/client/embed.rs"
 
 [dependencies]
 axum = "0.7.4"
