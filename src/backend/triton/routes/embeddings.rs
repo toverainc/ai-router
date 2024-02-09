@@ -113,7 +113,9 @@ fn build_triton_request(request: EmbeddingParameters) -> anyhow::Result<ModelInf
     builder.build().context("failed to build triton request")
 }
 
-fn build_embedding_response_data(input: &[Vec<f32>]) -> anyhow::Result<Vec<Embedding>> {
+/// # Errors
+/// - when the loop counter cannot be converted from `usize` to `u32`
+pub fn build_embedding_response_data(input: &[Vec<f32>]) -> anyhow::Result<Vec<Embedding>> {
     let mut embeddings = Vec::new();
 
     for (i, _) in input.iter().enumerate() {
@@ -132,7 +134,12 @@ fn build_embedding_response_data(input: &[Vec<f32>]) -> anyhow::Result<Vec<Embed
     Ok(embeddings)
 }
 
-fn transform_triton_f32_array(input: &[u8], batch_size: usize, dimensions: usize) -> Vec<Vec<f32>> {
+#[must_use]
+pub fn transform_triton_f32_array(
+    input: &[u8],
+    batch_size: usize,
+    dimensions: usize,
+) -> Vec<Vec<f32>> {
     let mut output: Vec<Vec<f32>> = Vec::new();
 
     let slice_f32: &[f32] = bytemuck::cast_slice::<u8, f32>(input);
