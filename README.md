@@ -22,17 +22,26 @@ AI Router presents an OpenAI API compatible HTTP interface to clients. AI Router
 
 ## Get started
 
-Clone this repo.
+Clone this repo:
+
+```bash
+git clone --recurse-submodules https://github.com/toverainc/ai-router.git
+```
 
 ### Build
 
-`./utils.sh build`
+```bash
+cd ai-router
+./utils.sh build
+```
 
 ### Start
 
 Make sure your [easy-triton](https://github.com/toverainc/easy-triton) instance is running. As long as you're using default settings continue with:
 
-`./utils.sh run-local`
+```bash
+./utils.sh run-local
+```
 
 ...or just use OpenAI/OpenAI compliant backend.
 
