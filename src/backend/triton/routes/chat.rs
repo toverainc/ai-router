@@ -27,6 +27,7 @@ use crate::backend::triton::ModelInferRequest;
 use crate::errors::AiRouterError;
 use crate::utils::deserialize_bytes_tensor;
 
+const MAX_TOKENS: u32 = 131_072;
 const MODEL_OUTPUT_NAME: &str = "text_output";
 
 #[instrument(
@@ -245,6 +246,13 @@ fn build_triton_request(request: ChatCompletionParameters) -> anyhow::Result<Mod
             InferTensorData::Bytes(vec!["".as_bytes().to_vec()]),
         )
         .input(
+            "max_tokens",
+            [1, 1],
+            InferTensorData::Int32(vec![i32::try_from(
+                request.max_tokens.unwrap_or(MAX_TOKENS),
+            )?]),
+        )
+        .input(
             "stream",
             [1, 1],
             InferTensorData::Bool(vec![request.stream.unwrap_or(false)]),
@@ -256,14 +264,6 @@ fn build_triton_request(request: ChatCompletionParameters) -> anyhow::Result<Mod
             "beam_width",
             [1, 1],
             InferTensorData::Int32(vec![i32::try_from(beam_width)?]),
-        );
-    }
-
-    if let Some(max_tokens) = request.max_tokens {
-        builder = builder.input(
-            "max_tokens",
-            [1, 1],
-            InferTensorData::Int32(vec![i32::try_from(max_tokens)?]),
         );
     }
 
