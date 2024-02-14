@@ -60,7 +60,7 @@ impl AiRouterConfigFile {
         let mut num_default_backends = 0;
 
         for backend in self.backends.values() {
-            if backend.default.is_some() && backend.default.unwrap() {
+            if backend.default.unwrap_or(false) {
                 num_default_backends += 1;
                 if num_default_backends > 1 {
                     return Err(anyhow!("multiple backends set as default"));
@@ -71,7 +71,7 @@ impl AiRouterConfigFile {
         for model_type in self.models.values() {
             let mut num_default_models = 0;
             for model in model_type.values() {
-                if model.default.is_some() && model.default.unwrap() {
+                if model.default.unwrap_or(false) {
                     num_default_models += 1;
                     if num_default_models > 1 {
                         return Err(anyhow!("multiple models set as default"));
