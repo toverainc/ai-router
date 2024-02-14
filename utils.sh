@@ -2,6 +2,7 @@
 
 set -e
 
+AIROUTER_CONFIG_FILE="ai-router.toml"
 PORT=3000
 
 case $1 in
@@ -11,11 +12,15 @@ build)
 ;;
 
 run)
-    docker run --rm -it -p "$PORT":3000 ai-router:latest
+    docker run --rm -it -p "$PORT":3000 \
+	    --volume="${PWD}/${AIROUTER_CONFIG_FILE}:/etc/ai-router.toml" \
+	    ai-router:latest
 ;;
 
 run-local)
-    docker run --rm -it --net=host ai-router:latest
+    docker run --rm -it --net=host \
+	    --volume="${PWD}/${AIROUTER_CONFIG_FILE}:/etc/ai-router.toml" \
+	    ai-router:latest
 ;;
 
 esac
