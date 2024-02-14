@@ -74,7 +74,7 @@ async fn chat_completions_stream(
                         "status_code": 500,
                         "message": "Internal Server Error"
                     }
-                })).unwrap();
+                }))?;
                 return;
             }
             let infer_response = response
@@ -110,7 +110,7 @@ async fn chat_completions_stream(
                         finish_reason: None,
                     }],
                 };
-                yield Event::default().json_data(response).unwrap();
+                yield Event::default().json_data(response)?;
             }
         }
         let response = ChatCompletionChunkResponse {
@@ -129,7 +129,7 @@ async fn chat_completions_stream(
                 finish_reason: Some(FinishReason::StopSequenceReached),
             }],
         };
-        yield Event::default().json_data(response).unwrap();
+        yield Event::default().json_data(response)?;
 
         // OpenAI stream response terminated by a data: [DONE] message.
         yield Event::default().data("[DONE]");
