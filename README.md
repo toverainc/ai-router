@@ -74,14 +74,10 @@ docker run --rm --name jaeger \
   -p 14269:14269 \
   -p 9411:9411 \
   jaegertracing/all-in-one:1.51
-  
+
 ```
 
-To enable tracing, set the `OTLP_ENDPOINT` environment variable or `--otlp-endpoint` command line
-argument to the endpoint of your OpenTelemetry collector.
-```bash
-OTLP_ENDPOINT=http://localhost:4317 cargo run --release
-```
+To enable tracing, set the `otlp_endpoint` key in the `[daemon]` section of the TOML config file to the endpoint of your OpenTelemetry collector.
 
 ## References
 - [cria](https://github.com/AmineDiro/cria)
