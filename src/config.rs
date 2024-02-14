@@ -128,7 +128,7 @@ mod tests {
     #[test]
     fn test_ok() {
         let config: Result<AiRouterConfigFile> =
-            AiRouterConfigFile::parse(String::from("ai-router.toml"));
+            AiRouterConfigFile::parse(String::from("ai-router.toml.example"));
         match config {
             Ok(o) => println!("{}", serde_json::to_string_pretty(&o).unwrap()),
             Err(e) => panic!("{e:?}"),
