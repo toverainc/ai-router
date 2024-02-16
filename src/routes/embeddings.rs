@@ -4,6 +4,7 @@ use axum::Json;
 use openai_dive::v1::resources::embedding::EmbeddingParameters;
 use tracing::instrument;
 
+use crate::backend::openai::routes as openai_routes;
 use crate::backend::triton::routes as triton_routes;
 use crate::config::AiRouterModelType;
 use crate::startup::{AppState, BackendTypes};
@@ -19,8 +20,11 @@ pub async fn embed(
                 request.model = backend_model;
             }
             match state.backends.get(&model.backend).unwrap() {
-                BackendTypes::OpenAI(_c) => {
-                    return "embeddings to OpenAI backend not implemented yet".into_response();
+                BackendTypes::OpenAI(c) => {
+                    return openai_routes::embeddings::embed(c.clone(), request)
+                        .await
+                        .unwrap()
+                        .into_response();
                 }
                 BackendTypes::Triton(c) => {
                     return triton_routes::embeddings::embed(c.clone(), request)
