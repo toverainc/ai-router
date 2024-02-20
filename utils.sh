@@ -2,8 +2,8 @@
 
 set -e
 
-AIROUTER_CONFIG_FILE="ai-router.toml"
-PORT=3000
+AIROUTER_CONFIG_FILE="${AIROUTER_CONFIG_FILE:-ai-router.toml}"
+PORT=${PORT:-3000}
 
 case $1 in
 
