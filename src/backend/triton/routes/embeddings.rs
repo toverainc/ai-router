@@ -118,11 +118,8 @@ fn build_triton_request(request: EmbeddingParameters) -> anyhow::Result<ModelInf
 pub fn build_embedding_response_data(input: &[Vec<f32>]) -> anyhow::Result<Vec<Embedding>> {
     let mut embeddings = Vec::new();
 
-    for (i, _) in input.iter().enumerate() {
-        let mut data: Vec<f64> = Vec::new();
-        for f in &input[i] {
-            data.push(f64::from(*f));
-        }
+    for (i, input) in input.iter().enumerate() {
+        let data: Vec<f64> = input.iter().map(|f| f64::from(*f)).collect();
         let embedding = Embedding {
             index: u32::try_from(i)?,
             embedding: EmbeddingOutput::Float(data),
