@@ -44,7 +44,8 @@ parser.add_argument(
     "-i",
     "--input",
     type=str,
-    default="This is the ai-router model comparison test",
+    default=["This is the ai-router model comparison test"],
+    nargs="+",
     required=False,
     help="Model input text",
 )
@@ -116,8 +117,8 @@ def openai_embedding(text):
     )
 
     response = client.embeddings.create(
-    	model= FLAGS.model,
-    	input=[text]
+        model= FLAGS.model,
+        input=text
 	)
 
     embedding = response.data[0].embedding
