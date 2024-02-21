@@ -50,3 +50,34 @@ pub(crate) fn deserialize_bytes_tensor(encoded_tensor: Vec<u8>) -> Result<Vec<St
     }
     Ok(strs)
 }
+
+#[cfg(test)]
+mod tests {
+    use std::fs::File;
+    use std::io::Read;
+
+    use serde::Deserialize;
+
+    use super::deserialize_bytes_tensor;
+
+    #[derive(Deserialize)]
+    struct UtilsTestData {
+        input: Vec<u8>,
+        output: Vec<String>,
+    }
+
+    #[test]
+    fn test_deserialize_bytes_tensor() {
+        let mut test_data = String::new();
+
+        File::open("tests/utils.deserialize_bytes_tensor")
+            .unwrap()
+            .read_to_string(&mut test_data)
+            .unwrap();
+        let test_data: UtilsTestData = serde_json::from_str(&test_data).unwrap();
+
+        let test_result = deserialize_bytes_tensor(test_data.input).unwrap();
+
+        assert_eq!(test_result, test_data.output);
+    }
+}
