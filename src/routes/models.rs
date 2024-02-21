@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::extract::State;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -7,7 +9,7 @@ use tracing::instrument;
 use crate::startup::AppState;
 
 #[instrument(name = "routes::models::get", skip(state))]
-pub async fn get(State(state): State<AppState>) -> Response {
+pub async fn get(State(state): State<Arc<AppState>>) -> Response {
     let mut model_names: Vec<String> = Vec::new();
 
     for model_type in state.config.models.keys() {

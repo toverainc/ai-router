@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
@@ -23,13 +24,13 @@ use crate::config::AiRouterConfigFile;
 use crate::errors::AiRouterError;
 use crate::routes;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct AppState {
     pub backends: HashMap<String, BackendTypes<OpenAIClient, GrpcInferenceServiceClient<Channel>>>,
     pub config: AiRouterConfigFile,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum BackendTypes<O, T> {
     OpenAI(O),
     Triton(T),
@@ -58,7 +59,7 @@ pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> 
         .route("/health_check", get(routes::health_check))
         .route("/metrics", get(|| async move { metric_handle.render() }))
         .fallback(fallback)
-        .with_state(state)
+        .with_state(Arc::new(state))
         .layer(prometheus_layer)
         .layer(OtelInResponseLayer)
         .layer(OtelAxumLayer::default())
