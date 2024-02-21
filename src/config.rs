@@ -8,6 +8,8 @@ use uuid::Uuid;
 
 const DEFAULT_CONFIG_FILE: &str = "/etc/ai-router.toml";
 
+type AiRouterModels = HashMap<AiRouterModelType, HashMap<String, AiRouterModel>>;
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum AiRouterBackendType {
@@ -37,7 +39,7 @@ pub struct AiRouterBackend {
 pub struct AiRouterConfigFile {
     pub backends: HashMap<String, AiRouterBackend>,
     pub daemon: AiRouterDaemon,
-    pub models: HashMap<AiRouterModelType, HashMap<String, AiRouterModel>>,
+    pub models: AiRouterModels,
     pub title: String,
 }
 
