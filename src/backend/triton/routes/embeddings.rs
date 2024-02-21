@@ -11,6 +11,7 @@ use tracing::instrument;
 
 use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
 use crate::backend::triton::request::{Builder, InferTensorData};
+use crate::backend::triton::utils::get_output_idx;
 use crate::backend::triton::ModelInferRequest;
 use crate::errors::AiRouterError;
 
@@ -49,14 +50,20 @@ pub(crate) async fn embed(
             .infer_response
             .context("empty infer response received")?;
 
-        if usize::try_from(infer_response.outputs[0].shape[0])? != batch_size {
+        let Some(idx) = get_output_idx(&infer_response.outputs, "embedding") else {
+            return Err(AiRouterError::InternalServerError(String::from(
+                "embedding not found in Triton response",
+            )));
+        };
+
+        if usize::try_from(infer_response.outputs[idx].shape[0])? != batch_size {
             return Err(AiRouterError::InternalServerError(String::from(
                 "batch sizes of request and response differ",
             )));
         }
 
-        dimensions = usize::try_from(infer_response.outputs[0].shape[1])?;
-        data.append(&mut infer_response.raw_output_contents[0]);
+        dimensions = usize::try_from(infer_response.outputs[idx].shape[1])?;
+        data.append(&mut infer_response.raw_output_contents[idx]);
     }
 
     tracing::debug!("{data:?}");

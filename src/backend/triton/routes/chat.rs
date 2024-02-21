@@ -22,6 +22,7 @@ use uuid::Uuid;
 
 use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
 use crate::backend::triton::request::{Builder, InferTensorData};
+use crate::backend::triton::utils::get_output_idx;
 use crate::backend::triton::ModelInferRequest;
 use crate::errors::AiRouterError;
 use crate::utils::deserialize_bytes_tensor;
@@ -82,7 +83,16 @@ async fn chat_completions_stream(
                 .context("empty infer response received")?;
             tracing::debug!("triton infer response: {:?}", infer_response);
 
-            let raw_content = infer_response.raw_output_contents[0].clone();
+            let Some(idx) = get_output_idx(&infer_response.outputs, "text_output") else {
+                let error = String::from("text_output not found in Triton response");
+                tracing::error!("{error:?}");
+                yield Event::default().json_data(json!({
+                    "error": error,
+                }))?;
+                return;
+            };
+
+            let raw_content = infer_response.raw_output_contents[idx].clone();
             let content = deserialize_bytes_tensor(raw_content)?
                 .into_iter()
                 .map(|s| s.replace("</s>", ""))
@@ -169,7 +179,13 @@ async fn chat_completions(
             .context("empty infer response received")?;
         tracing::debug!("triton infer response: {:?}", infer_response);
 
-        let raw_content = infer_response.raw_output_contents[0].clone();
+        let Some(idx) = get_output_idx(&infer_response.outputs, "text_output") else {
+            return Err(AiRouterError::InternalServerError(String::from(
+                "text_output not found in Triton response",
+            )));
+        };
+
+        let raw_content = infer_response.raw_output_contents[idx].clone();
         let content = deserialize_bytes_tensor(raw_content)?
             .into_iter()
             .map(|s| s.replace("</s>", ""))
