@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 const DEFAULT_CONFIG_FILE: &str = "/etc/ai-router.toml";
 
-type AiRouterModels = HashMap<AiRouterModelType, HashMap<String, AiRouterModel>>;
+pub type AiRouterModels = HashMap<AiRouterModelType, HashMap<String, AiRouterModel>>;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -142,6 +142,7 @@ pub struct AiRouterModel {
     pub backend: Option<String>,
     pub backend_model: Option<String>,
     pub default: Option<bool>,
+    pub hf_model_name: Option<String>,
     pub max_input: Option<u32>,
     pub prompt_format: Option<String>,
 }

@@ -23,11 +23,13 @@ use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceC
 use crate::config::AiRouterConfigFile;
 use crate::errors::AiRouterError;
 use crate::routes;
+use crate::tokenizers::Tokenizers;
 
 #[derive(Debug)]
 pub struct AppState {
     pub backends: HashMap<String, BackendTypes<OpenAIClient, GrpcInferenceServiceClient<Channel>>>,
     pub config: AiRouterConfigFile,
+    pub tokenizers: Tokenizers,
 }
 
 #[derive(Debug)]
@@ -46,9 +48,11 @@ pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> 
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
 
     let backends = init_backends(config_file).await;
+    let tokenizers = Tokenizers::new(&config_file.models);
     let state = AppState {
         backends,
         config: config_file.clone(),
+        tokenizers,
     };
 
     let app = Router::new()

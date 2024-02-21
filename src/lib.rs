@@ -4,4 +4,5 @@ mod errors;
 pub mod routes;
 pub mod startup;
 pub mod telemetry;
+mod tokenizers;
 mod utils;
