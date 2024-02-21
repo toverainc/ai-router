@@ -98,5 +98,9 @@ async fn shutdown_signal() {
         .await
         .expect("failed to install CTRL+C signal handler");
 
-    opentelemetry::global::shutdown_tracer_provider();
+    if let Err(e) =
+        tokio::task::spawn_blocking(opentelemetry::global::shutdown_tracer_provider).await
+    {
+        tracing::error!("failed to shutdown OpenTelemetry tracer provider: {e}");
+    }
 }
