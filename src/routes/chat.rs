@@ -7,6 +7,7 @@ use tracing::instrument;
 use crate::backend::openai::routes as openai_routes;
 use crate::backend::triton::routes as triton_routes;
 use crate::config::AiRouterModelType;
+use crate::errors::AiRouterError;
 use crate::startup::{AppState, BackendTypes};
 
 #[instrument(name = "routes::chat::completion", skip(state, request))]
@@ -36,5 +37,5 @@ pub async fn completion(
         }
     }
 
-    "failed to select backend for chat completion request".into_response()
+    return AiRouterError::ModelNotFound::<String>(request.model.clone()).into_response();
 }

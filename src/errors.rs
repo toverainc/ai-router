@@ -28,12 +28,24 @@ where
 }
 
 pub enum AiRouterError<T> {
+    ModelNotFound(String),
     UnknownUrl(Request<T>),
 }
 
 impl<T> IntoResponse for AiRouterError<T> {
     fn into_response(self) -> Response {
         match self {
+            Self::ModelNotFound(model_name) => {
+                let error = OpenAIError {
+                    error: OpenAIErrorData {
+                        code: Some(OpenAIErrorCode::ModelNotFound),
+                        message: format!("The model `{}` does not exist.", model_name),
+                        param: None,
+                        r#type: OpenAIErrorType::InvalidRequestError,
+                    },
+                };
+                (StatusCode::NOT_FOUND, Json(error)).into_response()
+            }
             Self::UnknownUrl(request) => {
                 let error = OpenAIError {
                     error: OpenAIErrorData {

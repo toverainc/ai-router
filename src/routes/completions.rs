@@ -6,6 +6,7 @@ use tracing::instrument;
 use crate::backend::triton::routes as triton_routes;
 use crate::backend::triton::routes::completions::CompletionCreateParams;
 use crate::config::AiRouterModelType;
+use crate::errors::AiRouterError;
 use crate::startup::{AppState, BackendTypes};
 
 #[instrument(name = "routes::completion::completions", skip(state, request))]
@@ -36,5 +37,5 @@ pub async fn completion(
         }
     }
 
-    "failed to select backend for legacy completion request".into_response()
+    return AiRouterError::ModelNotFound::<String>(request.model.clone()).into_response();
 }
