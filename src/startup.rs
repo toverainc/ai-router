@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
+use axum::http::{Request, StatusCode};
+use axum::response::IntoResponse;
 use axum::routing::{get, post};
-use axum::Router;
+use axum::{Json, Router};
 use axum_prometheus::PrometheusMetricLayer;
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use openai_dive::v1::api::Client as OpenAIClient;
@@ -19,6 +21,7 @@ use tracing::Level;
 use crate::backend::init_backends;
 use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
 use crate::config::AiRouterConfigFile;
+use crate::errors::{OpenAIError, OpenAIErrorCode, OpenAIErrorData, OpenAIErrorType};
 use crate::routes;
 
 #[derive(Clone, Debug)]
@@ -55,6 +58,7 @@ pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> 
         .route("/v1/models", get(routes::get))
         .route("/health_check", get(routes::health_check))
         .route("/metrics", get(|| async move { metric_handle.render() }))
+        .fallback(fallback)
         .with_state(state)
         .layer(prometheus_layer)
         .layer(OtelInResponseLayer)
@@ -91,6 +95,22 @@ pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> 
         .await?;
 
     Ok(())
+}
+
+async fn fallback<T>(request: Request<T>) -> impl IntoResponse {
+    let error = OpenAIError {
+        error: OpenAIErrorData {
+            code: Some(OpenAIErrorCode::UnknownUrl),
+            message: format!(
+                "Unknown request URL: {} {}. Please check the URL for typos.",
+                request.method(),
+                request.uri()
+            ),
+            param: None,
+            r#type: OpenAIErrorType::InvalidRequestError,
+        },
+    };
+    (StatusCode::NOT_FOUND, Json(error))
 }
 
 async fn shutdown_signal() {
