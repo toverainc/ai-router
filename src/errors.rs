@@ -1,6 +1,7 @@
 use axum::{
-    http::StatusCode,
+    http::{Request, StatusCode},
     response::{IntoResponse, Response},
+    Json,
 };
 use serde::{Deserialize, Serialize};
 
@@ -23,6 +24,32 @@ where
 {
     fn from(err: E) -> Self {
         Self(err.into())
+    }
+}
+
+pub enum AiRouterError<T> {
+    UnknownUrl(Request<T>),
+}
+
+impl<T> IntoResponse for AiRouterError<T> {
+    fn into_response(self) -> Response {
+        match self {
+            Self::UnknownUrl(request) => {
+                let error = OpenAIError {
+                    error: OpenAIErrorData {
+                        code: Some(OpenAIErrorCode::UnknownUrl),
+                        message: format!(
+                            "Unknown request URL: {} {}. Please check the URL for typos.",
+                            request.method(),
+                            request.uri()
+                        ),
+                        param: None,
+                        r#type: OpenAIErrorType::InvalidRequestError,
+                    },
+                };
+                (StatusCode::NOT_FOUND, Json(error)).into_response()
+            }
+        }
     }
 }
 
