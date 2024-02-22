@@ -18,7 +18,13 @@ pub async fn completion(
             if let Some(backend_model) = model.backend_model.clone() {
                 request.model = backend_model;
             }
-            match state.backends.get(&model.backend).unwrap() {
+
+            let model_backend = match &model.backend {
+                Some(m) => m,
+                None => "default",
+            };
+
+            match state.backends.get(model_backend).unwrap() {
                 BackendTypes::OpenAI(_) => {
                     return "legacy completions not supported in OpenAI backend".into_response();
                 }

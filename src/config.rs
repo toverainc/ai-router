@@ -82,10 +82,16 @@ impl AiRouterConfigFile {
     fn check_model_backends(&self) -> Result<()> {
         for model_type in self.models.values() {
             for (model_name, model) in model_type {
-                if !self.backends.contains_key(&model.backend) {
+                if let Some(model_backend) = &model.backend {
+                    if !self.backends.contains_key(model_backend) {
+                        return Err(anyhow!(
+                            "backend `{}` configured for model `{model_name}` does not exist",
+                            model_backend
+                        ));
+                    }
+                } else if self.num_default_backends() < 1 {
                     return Err(anyhow!(
-                        "backend `{}` configured for model `{model_name}` does not exist",
-                        model.backend
+                        "model `{model_name}` has no backend configured but no default backend exists",
                     ));
                 }
             }
@@ -131,7 +137,7 @@ pub struct AiRouterDaemon {
 #[skip_serializing_none]
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AiRouterModel {
-    pub backend: String,
+    pub backend: Option<String>,
     pub backend_model: Option<String>,
     pub default: Option<bool>,
     pub max_input: Option<u32>,
@@ -197,6 +203,18 @@ mod tests {
     fn test_model_backend_invalid() {
         let config: Result<AiRouterConfigFile> =
             AiRouterConfigFile::parse(String::from("tests/ai-router.toml.model_backend_invalid"));
+
+        match config {
+            Ok(o) => println!("{}", serde_json::to_string_pretty(&o).unwrap()),
+            Err(e) => panic!("{e:?}"),
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "config file validation failed: model ")]
+    fn test_no_default_backend() {
+        let config: Result<AiRouterConfigFile> =
+            AiRouterConfigFile::parse(String::from("tests/ai-router.toml.no_default_backend"));
 
         match config {
             Ok(o) => println!("{}", serde_json::to_string_pretty(&o).unwrap()),
