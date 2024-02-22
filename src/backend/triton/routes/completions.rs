@@ -22,40 +22,47 @@ use crate::backend::triton::request::{Builder, InferTensorData};
 use crate::backend::triton::utils::get_output_idx;
 use crate::backend::triton::ModelInferRequest;
 use crate::errors::AiRouterError;
+use crate::request::{check_input_cc, AiRouterRequestData};
 use crate::utils::{deserialize_bytes_tensor, string_or_seq_string};
 
 const MODEL_OUTPUT_NAME: &str = "text_output";
 
 #[instrument(
     name = "backend::triton::completions::compat_completions",
-    skip(client, request)
+    skip(client, request, request_data)
 )]
 pub async fn compat_completions(
     client: GrpcInferenceServiceClient<Channel>,
     request: Json<CompletionCreateParams>,
+    request_data: &AiRouterRequestData,
 ) -> Response {
     tracing::debug!("request: {:?}", request);
 
     if request.stream {
-        completions_stream(client, request).await.into_response()
+        completions_stream(client, request, request_data)
+            .await
+            .into_response()
     } else {
-        completions(client, request).await.into_response()
+        completions(client, request, request_data)
+            .await
+            .into_response()
     }
 }
 
 #[instrument(
     name = "backend::triton::completions::completions_stream",
-    skip(client, request)
+    skip(client, request, request_data)
 )]
 async fn completions_stream(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
+    request_data: &AiRouterRequestData,
 ) -> Result<Sse<impl Stream<Item = anyhow::Result<Event>>>, AiRouterError<String>> {
     let id = format!("cmpl-{}", Uuid::new_v4());
     let created = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
 
     let model_name = request.model.clone();
-    let request = build_triton_request(request)?;
+    let request = build_triton_request(request, request_data)?;
 
     let response_stream = try_stream! {
         let request_stream = stream! { yield request };
@@ -140,15 +147,16 @@ async fn completions_stream(
 
 #[instrument(
     name = "backend::triton::completions::completions",
-    skip(client, request),
+    skip(client, request, request_data),
     err(Debug)
 )]
 async fn completions(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
+    request_data: &AiRouterRequestData,
 ) -> Result<Json<Completion>, AiRouterError<String>> {
     let model_name = request.model.clone();
-    let request = build_triton_request(request)?;
+    let request = build_triton_request(request, request_data)?;
     let request_stream = stream! { yield request };
     let mut stream = client
         .model_stream_infer(tonic::Request::new(request_stream))
@@ -204,7 +212,13 @@ async fn completions(
     }))
 }
 
-fn build_triton_request(request: CompletionCreateParams) -> anyhow::Result<ModelInferRequest> {
+fn build_triton_request(
+    request: CompletionCreateParams,
+    request_data: &AiRouterRequestData,
+) -> Result<ModelInferRequest, AiRouterError<String>> {
+    let input: String = request.prompt.join(" ");
+    check_input_cc(&input, &request.model, request_data)?;
+
     let mut builder = Builder::new()
         .model_name(request.model)
         .input(
@@ -271,7 +285,7 @@ fn build_triton_request(request: CompletionCreateParams) -> anyhow::Result<Model
         );
     }
 
-    builder.build().context("failed to build triton request")
+    Ok(builder.build().context("failed to build triton request")?)
 }
 
 #[allow(dead_code)]

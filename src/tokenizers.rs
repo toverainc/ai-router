@@ -27,4 +27,8 @@ impl Tokenizers {
 
         Tokenizers(tokenizers)
     }
+
+    pub fn get(tokenizers: &Self, name: &str) -> Option<Tokenizer> {
+        tokenizers.0.get(name).cloned()
+    }
 }

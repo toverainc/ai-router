@@ -25,6 +25,7 @@ use crate::backend::triton::request::{Builder, InferTensorData};
 use crate::backend::triton::utils::get_output_idx;
 use crate::backend::triton::ModelInferRequest;
 use crate::errors::AiRouterError;
+use crate::request::{check_input_cc, AiRouterRequestData};
 use crate::utils::deserialize_bytes_tensor;
 
 const MAX_TOKENS: u32 = 131_072;
@@ -32,36 +33,40 @@ const MODEL_OUTPUT_NAME: &str = "text_output";
 
 #[instrument(
     name = "backend::triton::chat::compat_chat_completions",
-    skip(client, request)
+    skip(client, request, request_data)
 )]
 pub async fn compat_chat_completions(
     client: GrpcInferenceServiceClient<Channel>,
     request: Json<ChatCompletionParameters>,
+    request_data: &AiRouterRequestData,
 ) -> Response {
     tracing::debug!("request: {:?}", request);
 
     if request.stream.unwrap_or(false) {
-        chat_completions_stream(client, request)
+        chat_completions_stream(client, request, request_data)
             .await
             .into_response()
     } else {
-        chat_completions(client, request).await.into_response()
+        chat_completions(client, request, request_data)
+            .await
+            .into_response()
     }
 }
 
 #[instrument(
     name = "backend::triton::chat::chat_completions_stream",
-    skip(client, request)
+    skip(client, request, request_data)
 )]
 async fn chat_completions_stream(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<ChatCompletionParameters>,
+    request_data: &AiRouterRequestData,
 ) -> Result<Sse<impl Stream<Item = anyhow::Result<Event>>>, AiRouterError<String>> {
     let id = format!("cmpl-{}", Uuid::new_v4());
     let created = u32::try_from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())?;
 
     let model_name = request.model.clone();
-    let request = build_triton_request(request)?;
+    let request = build_triton_request(request, request_data)?;
 
     let response_stream = try_stream! {
         let request_stream = stream! { yield request };
@@ -159,15 +164,16 @@ async fn chat_completions_stream(
 
 #[instrument(
     name = "backend::triton::chat::chat_completions",
-    skip(client, request),
+    skip(client, request, request_data),
     err(Debug)
 )]
 async fn chat_completions(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<ChatCompletionParameters>,
+    request_data: &AiRouterRequestData,
 ) -> Result<Json<ChatCompletionResponse>, AiRouterError<String>> {
     let model_name = request.model.clone();
-    let request = build_triton_request(request)?;
+    let request = build_triton_request(request, request_data)?;
     let request_stream = stream! { yield request };
     let mut stream = client
         .model_stream_infer(tonic::Request::new(request_stream))
@@ -229,9 +235,14 @@ async fn chat_completions(
     }))
 }
 
-fn build_triton_request(request: ChatCompletionParameters) -> anyhow::Result<ModelInferRequest> {
+fn build_triton_request(
+    request: ChatCompletionParameters,
+    request_data: &AiRouterRequestData,
+) -> Result<ModelInferRequest, AiRouterError<String>> {
     let chat_history = build_chat_history(request.messages);
     tracing::debug!("chat history after formatting: {}", chat_history);
+
+    check_input_cc(&chat_history, &request.model, request_data)?;
 
     let mut builder = Builder::new()
         .model_name(request.model)
@@ -303,7 +314,7 @@ fn build_triton_request(request: ChatCompletionParameters) -> anyhow::Result<Mod
         builder = builder.input("top_p", [1, 1], InferTensorData::FP32(vec![top_p]));
     }
 
-    builder.build().context("failed to build triton request")
+    Ok(builder.build().context("failed to build triton request")?)
 }
 
 fn build_chat_history(messages: Vec<ChatMessage>) -> String {

@@ -9,6 +9,7 @@ use crate::backend::triton::routes as triton_routes;
 use crate::backend::triton::routes::completions::CompletionCreateParams;
 use crate::config::AiRouterModelType;
 use crate::errors::AiRouterError;
+use crate::request::AiRouterRequestData;
 use crate::startup::{AppState, BackendTypes};
 
 #[instrument(name = "routes::completion::completions", skip(state, request))]
@@ -18,6 +19,13 @@ pub async fn completion(
 ) -> Response {
     if let Some(model) = state.config.models.get(&AiRouterModelType::ChatCompletions) {
         if let Some(model) = model.get(&request.model) {
+            let request_data = match AiRouterRequestData::build(model, &request.model, &state) {
+                Ok(d) => d,
+                Err(e) => {
+                    return e.into_response();
+                }
+            };
+
             if let Some(backend_model) = model.backend_model.clone() {
                 request.model = backend_model;
             }
@@ -39,8 +47,12 @@ pub async fn completion(
                     return "legacy completions not supported in OpenAI backend".into_response();
                 }
                 BackendTypes::Triton(c) => {
-                    return triton_routes::completions::compat_completions(c.clone(), request)
-                        .await;
+                    return triton_routes::completions::compat_completions(
+                        c.clone(),
+                        request,
+                        &request_data,
+                    )
+                    .await;
                 }
             }
         }
