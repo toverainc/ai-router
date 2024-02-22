@@ -57,17 +57,9 @@ impl AiRouterConfigFile {
     }
 
     fn check_default_backends(&self) -> Result<()> {
-        let mut num_default_backends = 0;
-
-        for backend in self.backends.values() {
-            if backend.default.unwrap_or(false) {
-                num_default_backends += 1;
-                if num_default_backends > 1 {
-                    return Err(anyhow!("multiple backends set as default"));
-                }
-            }
+        if self.num_default_backends() > 1 {
+            return Err(anyhow!("multiple backends set as default"));
         }
-
         Ok(())
     }
 
@@ -99,6 +91,18 @@ impl AiRouterConfigFile {
             }
         }
         Ok(())
+    }
+
+    fn num_default_backends(&self) -> usize {
+        let mut num_default_backends = 0;
+
+        for backend in self.backends.values() {
+            if backend.default.unwrap_or(false) {
+                num_default_backends += 1;
+            }
+        }
+
+        num_default_backends
     }
 
     fn validate(&self) -> Result<()> {
