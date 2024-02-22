@@ -1,3 +1,5 @@
 /ai-router.toml
+/flamegraph.svg
+/perf.data*
 /target
 .idea/
