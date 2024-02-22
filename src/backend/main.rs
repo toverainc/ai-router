@@ -22,14 +22,28 @@ pub async fn init_backends(
                     http_client: reqwest::Client::new(),
                     organization: None,
                 };
-                map.insert(name.clone(), BackendTypes::OpenAI(backend_client));
+                map.insert(name.clone(), BackendTypes::OpenAI(backend_client.clone()));
+
+                if backend.default.unwrap_or(false) {
+                    map.insert(
+                        String::from("default"),
+                        BackendTypes::OpenAI(backend_client.clone()),
+                    );
+                }
             }
             AiRouterBackendType::Triton => {
                 println!("initializing Triton backend {name}");
                 let backend_client = GrpcInferenceServiceClient::connect(backend.base_url.clone())
                     .await
                     .unwrap();
-                map.insert(name.clone(), BackendTypes::Triton(backend_client));
+                map.insert(name.clone(), BackendTypes::Triton(backend_client.clone()));
+
+                if backend.default.unwrap_or(false) {
+                    map.insert(
+                        String::from("default"),
+                        BackendTypes::Triton(backend_client.clone()),
+                    );
+                }
             }
         }
     }
