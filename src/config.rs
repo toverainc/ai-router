@@ -87,9 +87,24 @@ impl AiRouterConfigFile {
         Ok(())
     }
 
+    fn check_model_backends(&self) -> Result<()> {
+        for model_type in self.models.values() {
+            for (model_name, model) in model_type {
+                if !self.backends.contains_key(&model.backend) {
+                    return Err(anyhow!(
+                        "backend `{}` configured for model `{model_name}` does not exist",
+                        model.backend
+                    ));
+                }
+            }
+        }
+        Ok(())
+    }
+
     fn validate(&self) -> Result<()> {
         self.check_default_backends()?;
         self.check_default_models()?;
+        self.check_model_backends()?;
 
         Ok(())
     }
@@ -166,6 +181,18 @@ mod tests {
     fn test_multiple_default_models() {
         let config: Result<AiRouterConfigFile> =
             AiRouterConfigFile::parse(String::from("tests/ai-router.toml.multiple_default_models"));
+
+        match config {
+            Ok(o) => println!("{}", serde_json::to_string_pretty(&o).unwrap()),
+            Err(e) => panic!("{e:?}"),
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "config file validation failed: backend ")]
+    fn test_model_backend_invalid() {
+        let config: Result<AiRouterConfigFile> =
+            AiRouterConfigFile::parse(String::from("tests/ai-router.toml.model_backend_invalid"));
 
         match config {
             Ok(o) => println!("{}", serde_json::to_string_pretty(&o).unwrap()),
