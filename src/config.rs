@@ -56,7 +56,7 @@ impl AiRouterConfigFile {
         Ok(config)
     }
 
-    fn validate(&self) -> Result<()> {
+    fn check_default_backends(&self) -> Result<()> {
         let mut num_default_backends = 0;
 
         for backend in self.backends.values() {
@@ -68,6 +68,10 @@ impl AiRouterConfigFile {
             }
         }
 
+        Ok(())
+    }
+
+    fn check_default_models(&self) -> Result<()> {
         for model_type in self.models.values() {
             let mut num_default_models = 0;
             for model in model_type.values() {
@@ -79,6 +83,14 @@ impl AiRouterConfigFile {
                 }
             }
         }
+
+        Ok(())
+    }
+
+    fn validate(&self) -> Result<()> {
+        self.check_default_backends()?;
+        self.check_default_models()?;
+
         Ok(())
     }
 }
