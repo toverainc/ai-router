@@ -16,7 +16,7 @@ use tower_http::{
 };
 use tracing::Level;
 
-use crate::backend::main::init_backends;
+use crate::backend::init_backends;
 use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
 use crate::config::AiRouterConfigFile;
 use crate::routes;
