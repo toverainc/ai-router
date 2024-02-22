@@ -1,0 +1,19 @@
+title = "test multiple default backends"
+
+[daemon]
+listen_ip = "0.0.0.0"
+listen_port = 3000
+
+[backends]
+
+[backends.triton_1]
+type = "triton"
+base_url = "http://127.0.1.1:8001"
+default = true
+
+[backends.triton_2]
+type = "triton"
+base_url = "http://127.0.1.2:8001"
+default = true
+
+[models]

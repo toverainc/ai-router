@@ -141,6 +141,32 @@ mod tests {
     fn test_ok() {
         let config: Result<AiRouterConfigFile> =
             AiRouterConfigFile::parse(String::from("ai-router.toml.example"));
+
+        match config {
+            Ok(o) => println!("{}", serde_json::to_string_pretty(&o).unwrap()),
+            Err(e) => panic!("{e:?}"),
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "config file validation failed: multiple backends set as default")]
+    fn test_multiple_default_backends() {
+        let config: Result<AiRouterConfigFile> = AiRouterConfigFile::parse(String::from(
+            "tests/ai-router.toml.multiple_default_backends",
+        ));
+
+        match config {
+            Ok(o) => println!("{}", serde_json::to_string_pretty(&o).unwrap()),
+            Err(e) => panic!("{e:?}"),
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "config file validation failed: multiple models set as default")]
+    fn test_multiple_default_models() {
+        let config: Result<AiRouterConfigFile> =
+            AiRouterConfigFile::parse(String::from("tests/ai-router.toml.multiple_default_models"));
+
         match config {
             Ok(o) => println!("{}", serde_json::to_string_pretty(&o).unwrap()),
             Err(e) => panic!("{e:?}"),
