@@ -10,3 +10,7 @@ target/
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+# cargo flamegraph files
+/flamegraph.svg
+/perf.data*
