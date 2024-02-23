@@ -32,13 +32,11 @@ pub async fn embed(
                 BackendTypes::OpenAI(c) => {
                     return openai_routes::embeddings::embed(c.clone(), request)
                         .await
-                        .unwrap()
                         .into_response();
                 }
                 BackendTypes::Triton(c) => {
                     return triton_routes::embeddings::embed(c.clone(), request)
                         .await
-                        .unwrap()
                         .into_response();
                 }
             }
