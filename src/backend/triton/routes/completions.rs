@@ -20,7 +20,7 @@ use uuid::Uuid;
 use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
 use crate::backend::triton::request::{Builder, InferTensorData};
 use crate::backend::triton::ModelInferRequest;
-use crate::errors::AppError;
+use crate::errors::AiRouterError;
 use crate::utils::{deserialize_bytes_tensor, string_or_seq_string};
 
 #[instrument(name = "completions", skip(client, request))]
@@ -41,7 +41,7 @@ pub(crate) async fn compat_completions(
 async fn completions_stream(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
-) -> Result<Sse<impl Stream<Item = anyhow::Result<Event>>>, AppError> {
+) -> Result<Sse<impl Stream<Item = anyhow::Result<Event>>>, AiRouterError<String>> {
     let id = format!("cmpl-{}", Uuid::new_v4());
     let created = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
 
@@ -124,7 +124,7 @@ async fn completions_stream(
 async fn completions(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
-) -> Result<Json<Completion>, AppError> {
+) -> Result<Json<Completion>, AiRouterError<String>> {
     let model_name = request.model.clone();
     let request = build_triton_request(request)?;
     let request_stream = stream! { yield request };

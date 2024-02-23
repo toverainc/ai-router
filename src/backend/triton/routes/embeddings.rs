@@ -12,13 +12,13 @@ use tracing::instrument;
 use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
 use crate::backend::triton::request::{Builder, InferTensorData};
 use crate::backend::triton::ModelInferRequest;
-use crate::errors::AppError;
+use crate::errors::AiRouterError;
 
 #[instrument(name = "backend::triton::embeddings::embed", skip(client, request))]
 pub(crate) async fn embed(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<EmbeddingParameters>,
-) -> Result<Json<EmbeddingResponse>, AppError> {
+) -> Result<Json<EmbeddingResponse>, AiRouterError<String>> {
     tracing::debug!("triton embeddings request: {:?}", request);
 
     let batch_size: usize = match request.input {

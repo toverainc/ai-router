@@ -7,7 +7,7 @@ use openai_dive::v1::resources::chat::{ChatCompletionParameters, ChatCompletionR
 use tonic::codegen::tokio_stream::{Stream, StreamExt};
 use tracing::instrument;
 
-use crate::errors::AppError;
+use crate::errors::AiRouterError;
 
 #[instrument(
     name = "backend::openai::routes::chat::wrap_chat_completion",
@@ -31,7 +31,7 @@ pub(crate) async fn wrap_chat_completion(
 async fn chat_completion(
     client: Client,
     Json(request): Json<ChatCompletionParameters>,
-) -> Result<Json<ChatCompletionResponse>, AppError> {
+) -> Result<Json<ChatCompletionResponse>, AiRouterError<String>> {
     let response = client.chat().create(request).await.unwrap();
     Ok(Json(response))
 }

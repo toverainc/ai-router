@@ -6,35 +6,35 @@ use axum::{
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
-pub struct AppError(anyhow::Error);
-
-impl IntoResponse for AppError {
-    fn into_response(self) -> Response {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "An error occurred while trying to fulfill your request.",
-        )
-            .into_response()
-    }
-}
-
-impl<E> From<E> for AppError
-where
-    E: Into<anyhow::Error>,
-{
-    fn from(err: E) -> Self {
-        Self(err.into())
-    }
-}
-
 pub enum AiRouterError<T> {
+    InternalServerError(String),
     ModelNotFound(String),
     UnknownUrl(Request<T>),
+}
+
+impl<E, T> From<E> for AiRouterError<T>
+where
+    E: Into<anyhow::Error> + std::fmt::Debug,
+{
+    fn from(err: E) -> Self {
+        Self::InternalServerError(format!("{err:?}"))
+    }
 }
 
 impl<T> IntoResponse for AiRouterError<T> {
     fn into_response(self) -> Response {
         match self {
+            Self::InternalServerError(msg) => {
+                let error = OpenAIError {
+                    error: OpenAIErrorData {
+                        code: None,
+                        message: msg,
+                        param: None,
+                        r#type: OpenAIErrorType::InternalServerError,
+                    },
+                };
+                (StatusCode::INTERNAL_SERVER_ERROR, Json(error)).into_response()
+            }
             Self::ModelNotFound(model_name) => {
                 let error = OpenAIError {
                     error: OpenAIErrorData {
@@ -76,6 +76,7 @@ pub enum OpenAIErrorCode {
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum OpenAIErrorType {
+    InternalServerError,
     InvalidRequestError,
 }
 
