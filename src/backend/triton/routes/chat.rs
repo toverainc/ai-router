@@ -96,7 +96,7 @@ async fn chat_completions_stream(
                 content_prev = content.clone();
                 let response = ChatCompletionChunkResponse {
                     id: id.clone(),
-                    object: "text_completion".to_string(),
+                    object: String::from("chat.completion.chunk"),
                     created,
                     model: model_name.clone(),
                     system_fingerprint: None,
@@ -115,7 +115,7 @@ async fn chat_completions_stream(
         }
         let response = ChatCompletionChunkResponse {
             id,
-            object: "text_completion".to_string(),
+            object: String::from("chat.completion.chunk"),
             created,
             model: model_name,
             system_fingerprint: None,
@@ -180,7 +180,7 @@ async fn chat_completions(
 
     Ok(Json(ChatCompletionResponse {
         id: format!("cmpl-{}", Uuid::new_v4()),
-        object: "text_completion".to_string(),
+        object: String::from("chat.completion"),
         created: u32::try_from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())?,
         model: model_name,
         system_fingerprint: None,
