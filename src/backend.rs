@@ -42,7 +42,12 @@ pub(crate) async fn init_backends(
                 println!("initializing Triton backend {name}");
                 let backend_client = GrpcInferenceServiceClient::connect(backend.base_url.clone())
                     .await
-                    .unwrap();
+                    .unwrap_or_else(|e| {
+                        panic!(
+                            "failed to connect to Triton backend {name} ({}): {e:?}",
+                            backend.base_url
+                        )
+                    });
                 map.insert(name.clone(), BackendTypes::Triton(backend_client.clone()));
 
                 if backend.default.unwrap_or(false) {
