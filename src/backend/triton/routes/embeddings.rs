@@ -40,18 +40,19 @@ pub(crate) async fn embed(
     let mut data: Vec<u8> = Vec::new();
     while let Some(response) = stream.message().await? {
         if !response.error_message.is_empty() {
-            return Err(anyhow::anyhow!(
+            return Err(AiRouterError::InternalServerError(format!(
                 "error message received from triton: {}",
                 response.error_message
-            )
-            .into());
+            )));
         }
         let mut infer_response = response
             .infer_response
             .context("empty infer response received")?;
 
         if usize::try_from(infer_response.outputs[0].shape[0])? != batch_size {
-            return Err(anyhow::anyhow!("batch sizes of request and response differ").into());
+            return Err(AiRouterError::InternalServerError(String::from(
+                "batch sizes of request and response differ",
+            )));
         }
 
         dimensions = usize::try_from(infer_response.outputs[0].shape[1])?;

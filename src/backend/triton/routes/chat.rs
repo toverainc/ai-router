@@ -159,11 +159,10 @@ async fn chat_completions(
     let mut contents: Vec<String> = Vec::new();
     while let Some(response) = stream.message().await? {
         if !response.error_message.is_empty() {
-            return Err(anyhow::anyhow!(
+            return Err(AiRouterError::InternalServerError(format!(
                 "error message received from triton: {}",
                 response.error_message
-            )
-            .into());
+            )));
         }
         let infer_response = response
             .infer_response
