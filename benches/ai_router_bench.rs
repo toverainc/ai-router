@@ -17,16 +17,20 @@ struct TestTransformTritonF32ArrayData {
 }
 
 fn bench_triton_embeddings(c: &mut Criterion) {
+    const TESTDATA_FILE: &str =
+        "tests/backend.triton.routes.embeddings.test_transform_triton_f32_array";
+
     let mut group = c.benchmark_group("transform_triton");
 
     let mut test_data = String::new();
 
-    File::open("tests/backend.triton.routes.embeddings.test_transform_triton_f32_array")
-        .unwrap()
+    File::open(TESTDATA_FILE)
+        .unwrap_or_else(|e| panic!("failed to open testdata file '{TESTDATA_FILE}': {e}"))
         .read_to_string(&mut test_data)
-        .unwrap();
+        .unwrap_or_else(|e| panic!("failed to read testdata file '{TESTDATA_FILE}': {e}"));
 
-    let test_data: TestTransformTritonF32ArrayData = serde_json::from_str(&test_data).unwrap();
+    let test_data: TestTransformTritonF32ArrayData =
+        serde_json::from_str(&test_data).expect("failed to convert testdata to JSON");
 
     group.bench_function("transform_triton_f32_array_batch_size_1", |b| {
         b.iter(|| transform_triton_f32_array(&test_data.input_batch_size_1, 1, 1024));
