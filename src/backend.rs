@@ -20,7 +20,11 @@ pub(crate) async fn init_backends(
             AiRouterBackendType::OpenAI => {
                 println!("initializing OpenAI backend {name}");
                 let backend_client = OpenAIClient {
-                    api_key: backend.api_key.as_ref().unwrap().clone(),
+                    api_key: backend
+                        .api_key
+                        .as_ref()
+                        .unwrap_or_else(|| panic!("OpenAI backend {name} is missing API key"))
+                        .clone(),
                     base_url: backend.base_url.clone(),
                     http_client: reqwest::Client::new(),
                     organization: None,
