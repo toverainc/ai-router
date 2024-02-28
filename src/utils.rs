@@ -68,15 +68,19 @@ mod tests {
 
     #[test]
     fn test_deserialize_bytes_tensor() {
+        const TESTDATA_FILE: &str = "tests/utils.deserialize_bytes_tensor";
+
         let mut test_data = String::new();
 
-        File::open("tests/utils.deserialize_bytes_tensor")
-            .unwrap()
+        File::open(TESTDATA_FILE)
+            .unwrap_or_else(|e| panic!("failed to open testdata file '{TESTDATA_FILE}': {e}"))
             .read_to_string(&mut test_data)
-            .unwrap();
-        let test_data: UtilsTestData = serde_json::from_str(&test_data).unwrap();
+            .unwrap_or_else(|e| panic!("failed to read testdata file '{TESTDATA_FILE}': {e}"));
+        let test_data: UtilsTestData =
+            serde_json::from_str(&test_data).expect("failed to convert testdata to JSON");
 
-        let test_result = deserialize_bytes_tensor(test_data.input).unwrap();
+        let test_result =
+            deserialize_bytes_tensor(test_data.input).expect("failed to deserialize testdata");
 
         assert_eq!(test_result, test_data.output);
     }
