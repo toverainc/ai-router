@@ -11,7 +11,9 @@ async fn main() -> anyhow::Result<()> {
     let args: AiRouterArguments = Figment::new()
         .merge(Serialized::defaults(AiRouterArguments::parse()))
         .extract()
-        .unwrap();
+        .unwrap_or_else(|e| {
+            panic!("failed to merge command line arguments: {e}");
+        });
 
     let config_file = AiRouterConfigFile::parse(args.config_file.clone())?;
 
