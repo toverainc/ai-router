@@ -6,6 +6,7 @@ use axum::Json;
 use openai_dive::v1::resources::model::{ListModelResponse, Model};
 use tracing::instrument;
 
+use crate::errors::AiRouterError;
 use crate::startup::AppState;
 
 #[instrument(name = "routes::models::get", skip(state))]
@@ -13,7 +14,13 @@ pub async fn get(State(state): State<Arc<AppState>>) -> Response {
     let mut model_names: Vec<String> = Vec::new();
 
     for model_type in state.config.models.keys() {
-        for model in state.config.models.get(model_type).unwrap().keys() {
+        let Some(models) = state.config.models.get(model_type) else {
+            return AiRouterError::InternalServerError::<String>(format!(
+                "failed to get models of type {model_type:?}"
+            ))
+            .into_response();
+        };
+        for model in models.keys() {
             model_names.push(model.clone());
         }
     }
