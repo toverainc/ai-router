@@ -168,7 +168,10 @@ mod tests {
             AiRouterConfigFile::parse(String::from("ai-router.toml.example"));
 
         match config {
-            Ok(o) => println!("{}", serde_json::to_string_pretty(&o).unwrap()),
+            Ok(o) => println!(
+                "{}",
+                serde_json::to_string_pretty(&o).expect("failed to convert config file to JSON")
+            ),
             Err(e) => panic!("{e:?}"),
         }
     }
@@ -181,7 +184,10 @@ mod tests {
         ));
 
         match config {
-            Ok(o) => println!("{}", serde_json::to_string_pretty(&o).unwrap()),
+            Ok(o) => println!(
+                "{}",
+                serde_json::to_string_pretty(&o).expect("failed to convert config file to JSON")
+            ),
             Err(e) => panic!("{e:?}"),
         }
     }
@@ -193,7 +199,10 @@ mod tests {
             AiRouterConfigFile::parse(String::from("tests/ai-router.toml.multiple_default_models"));
 
         match config {
-            Ok(o) => println!("{}", serde_json::to_string_pretty(&o).unwrap()),
+            Ok(o) => println!(
+                "{}",
+                serde_json::to_string_pretty(&o).expect("failed to convert config file to JSON")
+            ),
             Err(e) => panic!("{e:?}"),
         }
     }
@@ -205,7 +214,10 @@ mod tests {
             AiRouterConfigFile::parse(String::from("tests/ai-router.toml.model_backend_invalid"));
 
         match config {
-            Ok(o) => println!("{}", serde_json::to_string_pretty(&o).unwrap()),
+            Ok(o) => println!(
+                "{}",
+                serde_json::to_string_pretty(&o).expect("failed to convert config file to JSON")
+            ),
             Err(e) => panic!("{e:?}"),
         }
     }
@@ -217,7 +229,10 @@ mod tests {
             AiRouterConfigFile::parse(String::from("tests/ai-router.toml.no_default_backend"));
 
         match config {
-            Ok(o) => println!("{}", serde_json::to_string_pretty(&o).unwrap()),
+            Ok(o) => println!(
+                "{}",
+                serde_json::to_string_pretty(&o).expect("failed to convert config file to JSON")
+            ),
             Err(e) => panic!("{e:?}"),
         }
     }
