@@ -235,11 +235,11 @@ fn build_triton_request(request: CompletionCreateParams) -> anyhow::Result<Model
         )
         .output("text_output");
 
-    if request.seed.is_some() {
+    if let Some(seed) = request.seed {
         builder = builder.input(
             "random_seed",
             [1, 1],
-            InferTensorData::UInt64(vec![request.seed.unwrap() as u64]),
+            InferTensorData::UInt64(vec![seed as u64]),
         );
     }
 

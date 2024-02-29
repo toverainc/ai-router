@@ -227,60 +227,56 @@ fn build_triton_request(request: ChatCompletionParameters) -> anyhow::Result<Mod
         )
         .output("text_output");
 
-    if request.n.is_some() {
+    if let Some(beam_width) = request.n {
         builder = builder.input(
             "beam_width",
             [1, 1],
-            InferTensorData::Int32(vec![i32::try_from(request.n.unwrap())?]),
+            InferTensorData::Int32(vec![i32::try_from(beam_width)?]),
         );
     }
 
-    if request.max_tokens.is_some() {
+    if let Some(max_tokens) = request.max_tokens {
         builder = builder.input(
             "max_tokens",
             [1, 1],
-            InferTensorData::Int32(vec![i32::try_from(request.max_tokens.unwrap())?]),
+            InferTensorData::Int32(vec![i32::try_from(max_tokens)?]),
         );
     }
 
-    if request.presence_penalty.is_some() {
+    if let Some(presence_penalty) = request.presence_penalty {
         builder = builder.input(
             "presence_penalty",
             [1, 1],
-            InferTensorData::FP32(vec![request.presence_penalty.unwrap()]),
+            InferTensorData::FP32(vec![presence_penalty]),
         );
     }
 
-    if request.seed.is_some() {
+    if let Some(seed) = request.seed {
         builder = builder.input(
             "random_seed",
             [1, 1],
-            InferTensorData::UInt64(vec![u64::from(request.seed.unwrap())]),
+            InferTensorData::UInt64(vec![u64::from(seed)]),
         );
     }
 
-    if request.stop.is_some() {
-        let stop_words = match request.stop.unwrap() {
+    if let Some(stop) = request.stop {
+        let stop_words = match stop {
             StopToken::Array(a) => string_vec_to_byte_vecs(&a),
             StopToken::String(s) => vec![s.as_bytes().to_vec()],
         };
         builder = builder.input("stop_words", [1, 1], InferTensorData::Bytes(stop_words));
     }
 
-    if request.temperature.is_some() {
+    if let Some(temperature) = request.temperature {
         builder = builder.input(
             "temperature",
             [1, 1],
-            InferTensorData::FP32(vec![request.temperature.unwrap()]),
+            InferTensorData::FP32(vec![temperature]),
         );
     }
 
-    if request.top_p.is_some() {
-        builder = builder.input(
-            "top_p",
-            [1, 1],
-            InferTensorData::FP32(vec![request.top_p.unwrap()]),
-        );
+    if let Some(top_p) = request.top_p {
+        builder = builder.input("top_p", [1, 1], InferTensorData::FP32(vec![top_p]));
     }
 
     builder.build().context("failed to build triton request")
