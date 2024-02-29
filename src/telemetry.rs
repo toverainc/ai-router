@@ -73,6 +73,7 @@ pub fn init_subscriber(
 
     let fmt_layer = if cfg!(debug_assertions) {
         tracing_subscriber::fmt::layer()
+            .with_file(true)
             .with_line_number(true)
             .with_thread_names(true)
             .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
