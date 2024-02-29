@@ -29,7 +29,10 @@ use crate::utils::deserialize_bytes_tensor;
 
 const MODEL_OUTPUT_NAME: &str = "text_output";
 
-#[instrument(name = "chat_completions", skip(client, request))]
+#[instrument(
+    name = "backend::triton::chat::compat_chat_completions",
+    skip(client, request)
+)]
 pub(crate) async fn compat_chat_completions(
     client: GrpcInferenceServiceClient<Channel>,
     request: Json<ChatCompletionParameters>,
@@ -45,7 +48,10 @@ pub(crate) async fn compat_chat_completions(
     }
 }
 
-#[instrument(name = "streaming chat completions", skip(client, request))]
+#[instrument(
+    name = "backend::triton::chat::chat_completions_stream",
+    skip(client, request)
+)]
 async fn chat_completions_stream(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<ChatCompletionParameters>,
@@ -151,7 +157,7 @@ async fn chat_completions_stream(
 }
 
 #[instrument(
-    name = "non-streaming chat completions",
+    name = "backend::triton::chat::chat_completions",
     skip(client, request),
     err(Debug)
 )]
