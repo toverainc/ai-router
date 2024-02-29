@@ -19,7 +19,7 @@ path = "src/client/embed.rs"
 [dependencies]
 axum = "0.7.4"
 tower = "0.4.13"
-tower-http = { version = "0.5.1", features = ["trace", "request-id", "util"] }
+tower-http = { version = "0.5.2", features = ["trace", "request-id", "util"] }
 tokio = { version = "1.36.0", features = ["full"] }
 async-stream = "0.3.5"
 tonic = "0.11.0"
