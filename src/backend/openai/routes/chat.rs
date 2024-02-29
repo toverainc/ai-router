@@ -60,7 +60,7 @@ async fn chat_completion_stream(
         while let Some(response) = stream.next().await {
             match response {
                 Ok(response) => {
-                    tracing::info!("{response:?}");
+                    tracing::debug!("{response:?}");
                     yield Event::default().json_data(response)?;
                 }
                 Err(e) => tracing::error!("{e}"),

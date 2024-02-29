@@ -31,7 +31,7 @@ pub(crate) async fn compat_completions(
     client: GrpcInferenceServiceClient<Channel>,
     request: Json<CompletionCreateParams>,
 ) -> Response {
-    tracing::info!("request: {:?}", request);
+    tracing::debug!("request: {:?}", request);
 
     if request.stream {
         completions_stream(client, request).await.into_response()
