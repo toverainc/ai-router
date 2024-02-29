@@ -13,7 +13,7 @@ use crate::errors::AiRouterError;
 use crate::request::AiRouterRequestData;
 use crate::state::{BackendTypes, State};
 
-#[instrument(name = "routes::embeddings::embed", skip(state, request))]
+#[instrument(skip(state, request))]
 pub async fn embed(
     AxumState(state): AxumState<Arc<State>>,
     mut request: Json<EmbeddingParameters>,

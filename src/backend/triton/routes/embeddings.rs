@@ -18,7 +18,7 @@ use crate::request::AiRouterRequestData;
 
 const MODEL_OUTPUT_NAME: &str = "embedding";
 
-#[instrument(name = "backend::triton::embeddings::embed", skip(client, request))]
+#[instrument(skip(client, request))]
 pub(crate) async fn embed(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<EmbeddingParameters>,

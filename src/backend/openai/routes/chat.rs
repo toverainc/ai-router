@@ -10,10 +10,7 @@ use tracing::instrument;
 use crate::errors::{transform_openai_dive_apierror, AiRouterError};
 use crate::request::AiRouterRequestData;
 
-#[instrument(
-    name = "backend::openai::routes::chat::wrap_chat_completion",
-    skip(client, request)
-)]
+#[instrument(skip(client, request))]
 pub async fn wrap_chat_completion(
     client: Client,
     request: Json<ChatCompletionParameters>,
@@ -30,10 +27,7 @@ pub async fn wrap_chat_completion(
     }
 }
 
-#[instrument(
-    name = "backend::openai::routes::chat::chat_completion",
-    skip(client, request)
-)]
+#[instrument(skip(client, request))]
 async fn chat_completion(
     client: Client,
     Json(request): Json<ChatCompletionParameters>,
@@ -51,10 +45,7 @@ async fn chat_completion(
     Ok(Json(response))
 }
 
-#[instrument(
-    name = "backend::openai::routes::chat::chat_completion_stream",
-    skip(client, request)
-)]
+#[instrument(skip(client, request))]
 async fn chat_completion_stream(
     client: Client,
     Json(request): Json<ChatCompletionParameters>,

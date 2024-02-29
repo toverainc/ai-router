@@ -27,10 +27,7 @@ use crate::utils::{deserialize_bytes_tensor, string_or_seq_string};
 
 const MODEL_OUTPUT_NAME: &str = "text_output";
 
-#[instrument(
-    name = "backend::triton::completions::compat_completions",
-    skip(client, request, request_data)
-)]
+#[instrument(skip(client, request, request_data))]
 pub async fn compat_completions(
     client: GrpcInferenceServiceClient<Channel>,
     request: Json<CompletionCreateParams>,
@@ -49,10 +46,7 @@ pub async fn compat_completions(
     }
 }
 
-#[instrument(
-    name = "backend::triton::completions::completions_stream",
-    skip(client, request, request_data)
-)]
+#[instrument(skip(client, request, request_data))]
 async fn completions_stream(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
@@ -148,11 +142,7 @@ async fn completions_stream(
     Ok(Sse::new(response_stream).keep_alive(KeepAlive::default()))
 }
 
-#[instrument(
-    name = "backend::triton::completions::completions",
-    skip(client, request, request_data),
-    err(Debug)
-)]
+#[instrument(skip(client, request, request_data), err(Debug))]
 async fn completions(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
