@@ -17,7 +17,7 @@ async fn main() -> anyhow::Result<()> {
 
     let config_file = AiRouterConfigFile::parse(args.config_file.clone())?;
 
-    telemetry::init_subscriber("ai_router", "info", std::io::stdout, &config_file.daemon);
+    telemetry::init_subscriber("ai_router", "info", &config_file.daemon)?;
 
     startup::run_server(&config_file).await
 }

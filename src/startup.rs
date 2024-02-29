@@ -6,14 +6,6 @@ use axum::Router;
 use axum_prometheus::PrometheusMetricLayer;
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use tokio::net::TcpListener;
-use tower::ServiceBuilder;
-use tower_http::request_id::MakeRequestUuid;
-use tower_http::{
-    trace::TraceLayer,
-    trace::{DefaultMakeSpan, DefaultOnResponse},
-    ServiceBuilderExt,
-};
-use tracing::Level;
 
 use crate::backend::init_backends;
 use crate::config::AiRouterConfigFile;
@@ -50,25 +42,7 @@ pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> 
         .with_state(Arc::new(state))
         .layer(prometheus_layer)
         .layer(OtelInResponseLayer)
-        .layer(OtelAxumLayer::default())
-        .layer(
-            ServiceBuilder::new()
-                .set_x_request_id(MakeRequestUuid)
-                .layer(
-                    TraceLayer::new_for_http()
-                        .make_span_with(
-                            DefaultMakeSpan::new()
-                                .include_headers(true)
-                                .level(Level::DEBUG),
-                        )
-                        .on_response(
-                            DefaultOnResponse::new()
-                                .include_headers(true)
-                                .level(Level::DEBUG),
-                        ),
-                )
-                .propagate_x_request_id(),
-        );
+        .layer(OtelAxumLayer::default());
 
     let address = format!(
         "{}:{}",
