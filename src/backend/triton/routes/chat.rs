@@ -27,6 +27,8 @@ use crate::backend::triton::ModelInferRequest;
 use crate::errors::AiRouterError;
 use crate::utils::deserialize_bytes_tensor;
 
+const MODEL_OUTPUT_NAME: &str = "text_output";
+
 #[instrument(name = "chat_completions", skip(client, request))]
 pub(crate) async fn compat_chat_completions(
     client: GrpcInferenceServiceClient<Channel>,
@@ -83,8 +85,8 @@ async fn chat_completions_stream(
                 .context("empty infer response received")?;
             tracing::debug!("triton infer response: {:?}", infer_response);
 
-            let Some(idx) = get_output_idx(&infer_response.outputs, "text_output") else {
-                let error = String::from("text_output not found in Triton response");
+            let Some(idx) = get_output_idx(&infer_response.outputs, MODEL_OUTPUT_NAME) else {
+                let error = format!("{MODEL_OUTPUT_NAME} not found in Triton response");
                 tracing::error!("{error:?}");
                 yield Event::default().json_data(json!({
                     "error": error,
@@ -179,9 +181,9 @@ async fn chat_completions(
             .context("empty infer response received")?;
         tracing::debug!("triton infer response: {:?}", infer_response);
 
-        let Some(idx) = get_output_idx(&infer_response.outputs, "text_output") else {
-            return Err(AiRouterError::InternalServerError(String::from(
-                "text_output not found in Triton response",
+        let Some(idx) = get_output_idx(&infer_response.outputs, MODEL_OUTPUT_NAME) else {
+            return Err(AiRouterError::InternalServerError(format!(
+                "{MODEL_OUTPUT_NAME} not found in Triton response"
             )));
         };
 
@@ -241,7 +243,7 @@ fn build_triton_request(request: ChatCompletionParameters) -> anyhow::Result<Mod
             [1, 1],
             InferTensorData::Bool(vec![request.stream.unwrap_or(false)]),
         )
-        .output("text_output");
+        .output(MODEL_OUTPUT_NAME);
 
     if let Some(beam_width) = request.n {
         builder = builder.input(

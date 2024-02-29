@@ -15,6 +15,8 @@ use crate::backend::triton::utils::get_output_idx;
 use crate::backend::triton::ModelInferRequest;
 use crate::errors::AiRouterError;
 
+const MODEL_OUTPUT_NAME: &str = "embedding";
+
 #[instrument(name = "backend::triton::embeddings::embed", skip(client, request))]
 pub(crate) async fn embed(
     mut client: GrpcInferenceServiceClient<Channel>,
@@ -50,9 +52,9 @@ pub(crate) async fn embed(
             .infer_response
             .context("empty infer response received")?;
 
-        let Some(idx) = get_output_idx(&infer_response.outputs, "embedding") else {
-            return Err(AiRouterError::InternalServerError(String::from(
-                "embedding not found in Triton response",
+        let Some(idx) = get_output_idx(&infer_response.outputs, MODEL_OUTPUT_NAME) else {
+            return Err(AiRouterError::InternalServerError(format!(
+                "{MODEL_OUTPUT_NAME} not found in Triton response"
             )));
         };
 
@@ -116,7 +118,7 @@ fn build_triton_request(request: EmbeddingParameters) -> anyhow::Result<ModelInf
             [batch_size, 1],
             InferTensorData::Bytes(triton_input),
         )
-        .output("embedding");
+        .output(MODEL_OUTPUT_NAME);
 
     builder.build().context("failed to build triton request")
 }
