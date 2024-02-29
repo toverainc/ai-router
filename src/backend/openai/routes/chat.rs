@@ -7,7 +7,7 @@ use openai_dive::v1::resources::chat::{ChatCompletionParameters, ChatCompletionR
 use tonic::codegen::tokio_stream::{Stream, StreamExt};
 use tracing::instrument;
 
-use crate::errors::AiRouterError;
+use crate::errors::{transform_openai_dive_apierror, AiRouterError};
 
 #[instrument(
     name = "backend::openai::routes::chat::wrap_chat_completion",
@@ -18,7 +18,9 @@ pub(crate) async fn wrap_chat_completion(
     request: Json<ChatCompletionParameters>,
 ) -> Response {
     if request.stream.unwrap_or(false) {
-        chat_completion_stream(client, request).into_response()
+        chat_completion_stream(client, request)
+            .await
+            .into_response()
     } else {
         chat_completion(client, request).await.into_response()
     }
@@ -32,7 +34,11 @@ async fn chat_completion(
     client: Client,
     Json(request): Json<ChatCompletionParameters>,
 ) -> Result<Json<ChatCompletionResponse>, AiRouterError<String>> {
-    let response = client.chat().create(request).await.unwrap();
+    let response = client
+        .chat()
+        .create(request)
+        .await
+        .map_err(|e| transform_openai_dive_apierror(&e))?;
     Ok(Json(response))
 }
 
@@ -40,23 +46,27 @@ async fn chat_completion(
     name = "backend::openai::routes::chat::chat_completion_stream",
     skip(client, request)
 )]
-fn chat_completion_stream(
+async fn chat_completion_stream(
     client: Client,
     Json(request): Json<ChatCompletionParameters>,
-) -> Sse<impl Stream<Item = anyhow::Result<Event>>> {
-    let response_stream = try_stream! {
-        let mut stream = client.chat().create_stream(request.clone()).await.unwrap();
+) -> Result<Sse<impl Stream<Item = anyhow::Result<Event>>>, AiRouterError<String>> {
+    let mut stream = client
+        .chat()
+        .create_stream(request.clone())
+        .await
+        .map_err(|e| transform_openai_dive_apierror(&e))?;
 
+    let response_stream = try_stream! {
         while let Some(response) = stream.next().await {
             match response {
                 Ok(response) => {
                     tracing::info!("{response:?}");
-                    yield Event::default().json_data(response).unwrap();
+                    yield Event::default().json_data(response)?;
                 }
                 Err(e) => tracing::error!("{e}"),
             }
         }
     };
 
-    Sse::new(response_stream).keep_alive(KeepAlive::default())
+    Ok(Sse::new(response_stream).keep_alive(KeepAlive::default()))
 }
