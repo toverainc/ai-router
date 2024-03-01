@@ -33,7 +33,7 @@ const MODEL_OUTPUT_NAME: &str = "text_output";
     name = "backend::triton::chat::compat_chat_completions",
     skip(client, request)
 )]
-pub(crate) async fn compat_chat_completions(
+pub async fn compat_chat_completions(
     client: GrpcInferenceServiceClient<Channel>,
     request: Json<ChatCompletionParameters>,
 ) -> Response {

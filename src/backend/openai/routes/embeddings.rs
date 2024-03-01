@@ -6,7 +6,7 @@ use tracing::instrument;
 use crate::errors::{transform_openai_dive_apierror, AiRouterError};
 
 #[instrument(name = "backend::openai::embeddings::embed", skip(client, request))]
-pub(crate) async fn embed(
+pub async fn embed(
     client: Client,
     Json(request): Json<EmbeddingParameters>,
 ) -> Result<Json<EmbeddingResponse>, AiRouterError<String>> {

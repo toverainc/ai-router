@@ -30,7 +30,7 @@ const MODEL_OUTPUT_NAME: &str = "text_output";
     name = "backend::triton::completions::compat_completions",
     skip(client, request)
 )]
-pub(crate) async fn compat_completions(
+pub async fn compat_completions(
     client: GrpcInferenceServiceClient<Channel>,
     request: Json<CompletionCreateParams>,
 ) -> Response {

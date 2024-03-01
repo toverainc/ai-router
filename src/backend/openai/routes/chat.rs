@@ -13,7 +13,7 @@ use crate::errors::{transform_openai_dive_apierror, AiRouterError};
     name = "backend::openai::routes::chat::wrap_chat_completion",
     skip(client, request)
 )]
-pub(crate) async fn wrap_chat_completion(
+pub async fn wrap_chat_completion(
     client: Client,
     request: Json<ChatCompletionParameters>,
 ) -> Response {
