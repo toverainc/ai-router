@@ -42,7 +42,7 @@ impl<T> IntoResponse for AiRouterError<T> {
                 let error = OpenAIError {
                     error: OpenAIErrorData {
                         code: Some(OpenAIErrorCode::ModelNotFound),
-                        message: format!("The model `{}` does not exist.", model_name),
+                        message: format!("The model `{model_name}` does not exist."),
                         param: None,
                         r#type: OpenAIErrorType::InvalidRequestError,
                     },

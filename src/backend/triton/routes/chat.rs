@@ -315,23 +315,23 @@ fn build_chat_history(messages: Vec<ChatMessage>) -> String {
         match message.role {
             Role::System => {
                 if let Some(name) = message.name {
-                    history.push_str(&format!("System {}: {}\n", name, content));
+                    history.push_str(&format!("System {name}: {content}\n"));
                 } else {
-                    history.push_str(&format!("System: {}\n", content));
+                    history.push_str(&format!("System: {content}\n"));
                 }
             }
             Role::User => {
                 if let Some(name) = message.name {
-                    history.push_str(&format!("User {}: {}\n", name, content));
+                    history.push_str(&format!("User {name}: {content}\n"));
                 } else {
-                    history.push_str(&format!("User: {}\n", content));
+                    history.push_str(&format!("User: {content}\n"));
                 }
             }
             Role::Assistant => {
-                history.push_str(&format!("Assistant: {}\n", content));
+                history.push_str(&format!("Assistant: {content}\n"));
             }
             Role::Tool => {
-                history.push_str(&format!("Tool: {}\n", content));
+                history.push_str(&format!("Tool: {content}\n"));
             }
             Role::Function => {}
         }
