@@ -49,9 +49,9 @@ impl AiRouterConfigFile {
     /// # Errors
     /// - when file at path cannot be opened
     /// - when file content cannot be deserialized into `AiRouterConfigFile`
-    pub fn parse(path: String) -> Result<AiRouterConfigFile> {
+    pub fn parse(path: String) -> Result<Self> {
         let config = std::fs::read_to_string(path)?;
-        let config: AiRouterConfigFile = toml::from_str(&config)?;
+        let config: Self = toml::from_str(&config)?;
         if let Err(e) = config.validate() {
             return Err(anyhow!("config file validation failed: {e}"));
         }

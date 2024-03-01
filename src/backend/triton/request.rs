@@ -109,14 +109,14 @@ pub(crate) enum InferTensorData {
 impl AsRef<str> for InferTensorData {
     fn as_ref(&self) -> &str {
         match self {
-            InferTensorData::Bool(_) => "BOOL",
-            InferTensorData::Int32(_) => "INT32",
-            InferTensorData::Int64(_) => "INT64",
-            InferTensorData::UInt32(_) => "UINT32",
-            InferTensorData::UInt64(_) => "UINT64",
-            InferTensorData::FP32(_) => "FP32",
-            InferTensorData::FP64(_) => "FP64",
-            InferTensorData::Bytes(_) => "BYTES",
+            Self::Bool(_) => "BOOL",
+            Self::Int32(_) => "INT32",
+            Self::Int64(_) => "INT64",
+            Self::UInt32(_) => "UINT32",
+            Self::UInt64(_) => "UINT64",
+            Self::FP32(_) => "FP32",
+            Self::FP64(_) => "FP64",
+            Self::Bytes(_) => "BYTES",
         }
     }
 }
@@ -124,35 +124,35 @@ impl AsRef<str> for InferTensorData {
 impl From<InferTensorData> for InferTensorContents {
     fn from(data: InferTensorData) -> Self {
         match data {
-            InferTensorData::Bool(data) => InferTensorContents {
+            InferTensorData::Bool(data) => Self {
                 bool_contents: data,
                 ..Default::default()
             },
-            InferTensorData::Int32(data) => InferTensorContents {
+            InferTensorData::Int32(data) => Self {
                 int_contents: data,
                 ..Default::default()
             },
-            InferTensorData::Int64(data) => InferTensorContents {
+            InferTensorData::Int64(data) => Self {
                 int64_contents: data,
                 ..Default::default()
             },
-            InferTensorData::UInt32(data) => InferTensorContents {
+            InferTensorData::UInt32(data) => Self {
                 uint_contents: data,
                 ..Default::default()
             },
-            InferTensorData::UInt64(data) => InferTensorContents {
+            InferTensorData::UInt64(data) => Self {
                 uint64_contents: data,
                 ..Default::default()
             },
-            InferTensorData::FP32(data) => InferTensorContents {
+            InferTensorData::FP32(data) => Self {
                 fp32_contents: data,
                 ..Default::default()
             },
-            InferTensorData::FP64(data) => InferTensorContents {
+            InferTensorData::FP64(data) => Self {
                 fp64_contents: data,
                 ..Default::default()
             },
-            InferTensorData::Bytes(data) => InferTensorContents {
+            InferTensorData::Bytes(data) => Self {
                 bytes_contents: data,
                 ..Default::default()
             },
