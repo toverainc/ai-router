@@ -1,2 +1,2 @@
-pub(crate) mod chat;
-pub(crate) mod embeddings;
+pub mod chat;
+pub mod embeddings;

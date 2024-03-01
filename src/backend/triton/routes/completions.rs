@@ -276,7 +276,7 @@ fn build_triton_request(request: CompletionCreateParams) -> anyhow::Result<Model
 
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
-pub(crate) struct CompletionCreateParams {
+pub struct CompletionCreateParams {
     /// ID of the model to use.
     pub model: String,
     /// The prompt(s) to generate completions for, encoded as a string, array of strings, array of

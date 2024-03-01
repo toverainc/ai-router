@@ -6,7 +6,7 @@ use std::str::Utf8Error;
 use bytes::{Buf, Bytes};
 use serde::{de, Deserialize, Deserializer};
 
-pub(crate) fn string_or_seq_string<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+pub fn string_or_seq_string<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -37,7 +37,7 @@ where
     deserializer.deserialize_any(StringOrVec(PhantomData))
 }
 
-pub(crate) fn deserialize_bytes_tensor(encoded_tensor: Vec<u8>) -> Result<Vec<String>, Utf8Error> {
+pub fn deserialize_bytes_tensor(encoded_tensor: Vec<u8>) -> Result<Vec<String>, Utf8Error> {
     let mut bytes = Bytes::from(encoded_tensor);
     let mut strs = Vec::new();
     while bytes.has_remaining() {

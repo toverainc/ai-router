@@ -3,7 +3,7 @@
 use super::{InferTensorContents, ModelInferRequest};
 use crate::backend::triton::model_infer_request::{InferInputTensor, InferRequestedOutputTensor};
 
-pub(crate) struct Builder {
+pub struct Builder {
     inner: anyhow::Result<ModelInferRequest>,
 }
 
@@ -94,7 +94,7 @@ impl Default for Builder {
     }
 }
 
-pub(crate) enum InferTensorData {
+pub enum InferTensorData {
     Bool(Vec<bool>),
     Int32(Vec<i32>),
     Int64(Vec<i64>),
