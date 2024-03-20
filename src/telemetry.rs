@@ -1,4 +1,5 @@
 use opentelemetry::trace::TraceError;
+use opentelemetry_jaeger_propagator::propagator::Propagator;
 use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::trace as sdktrace;
 use opentelemetry_sdk::{runtime, Resource};
@@ -14,7 +15,7 @@ fn init_tracer(airouter_daemon_config: &AiRouterDaemon) -> Result<sdktrace::Trac
     let Some(otlp_endpoint) = airouter_daemon_config.otlp_endpoint.clone() else {
         return Err(TraceError::Other("otlp_endpoint not set".into()));
     };
-    opentelemetry::global::set_text_map_propagator(opentelemetry_jaeger::Propagator::new());
+    opentelemetry::global::set_text_map_propagator(Propagator::new());
     opentelemetry_otlp::new_pipeline()
         .tracing()
         .with_exporter(
