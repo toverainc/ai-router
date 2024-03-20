@@ -24,7 +24,7 @@ axum-prometheus = "0.6.1"
 axum-tracing-opentelemetry = "0.18.0"
 bytemuck = "1.15.0"
 bytes = "1.5.0"
-clap = { version = "4.5.1", features = ["derive"] }
+clap = { version = "4.5.3", features = ["derive"] }
 figment = { version = "0.10.14", features = ["env"] }
 openai_dive = { version = "0.4.5", features = ["stream"] }
 opentelemetry = { version = "0.21.0", features = ["metrics"] }
