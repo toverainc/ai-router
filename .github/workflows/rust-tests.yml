@@ -30,3 +30,5 @@ jobs:
         uses: actions-rust-lang/rustfmt@v1
       - name: Run cargo clippy
         run: cargo clippy --all-features --all-targets --no-deps
+      - name: Run Rust tests
+        run: cargo test
