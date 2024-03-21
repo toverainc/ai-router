@@ -26,6 +26,8 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: rustfmt
+      - name: Rust smart caching
+        uses: Swatinem/rust-cache@v2
       - name: Check code format with rustfmt
         uses: actions-rust-lang/rustfmt@v1
       - name: Run cargo clippy
