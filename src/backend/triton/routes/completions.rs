@@ -70,6 +70,8 @@ async fn completions_stream(
             .context("failed to call triton grpc method model_stream_infer")?
             .into_inner();
 
+        let mut content_prev = String::new();
+
         while let Some(response) = stream.message().await? {
             if !response.error_message.is_empty() {
                 tracing::error!("received error message from triton: {}", response.error_message);
@@ -104,13 +106,18 @@ async fn completions_stream(
                 .collect::<String>();
 
             if !content.is_empty() {
+                let content_new = content.replace(&content_prev, "");
+                if content_new.is_empty() {
+                    continue;
+                }
+                content_prev = content.clone();
                 let response = Completion {
                     id: id.clone(),
                     object: "text_completion".to_string(),
                     created,
                     model: model_name.clone(),
                     choices: vec![CompletionChoice {
-                        text: content,
+                        text: content_new,
                         index: 0,
                         logprobs: None,
                         finish_reason: None,
