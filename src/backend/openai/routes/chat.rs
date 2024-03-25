@@ -8,6 +8,7 @@ use tonic::codegen::tokio_stream::{Stream, StreamExt};
 use tracing::instrument;
 
 use crate::errors::{transform_openai_dive_apierror, AiRouterError};
+use crate::request::AiRouterRequestData;
 
 #[instrument(
     name = "backend::openai::routes::chat::wrap_chat_completion",
@@ -16,13 +17,16 @@ use crate::errors::{transform_openai_dive_apierror, AiRouterError};
 pub async fn wrap_chat_completion(
     client: Client,
     request: Json<ChatCompletionParameters>,
+    request_data: &AiRouterRequestData,
 ) -> Response {
     if request.stream.unwrap_or(false) {
-        chat_completion_stream(client, request)
+        chat_completion_stream(client, request, request_data)
             .await
             .into_response()
     } else {
-        chat_completion(client, request).await.into_response()
+        chat_completion(client, request, request_data)
+            .await
+            .into_response()
     }
 }
 
@@ -33,12 +37,17 @@ pub async fn wrap_chat_completion(
 async fn chat_completion(
     client: Client,
     Json(request): Json<ChatCompletionParameters>,
+    request_data: &AiRouterRequestData,
 ) -> Result<Json<ChatCompletionResponse>, AiRouterError<String>> {
-    let response = client
+    let mut response = client
         .chat()
         .create(request)
         .await
         .map_err(|e| transform_openai_dive_apierror(&e))?;
+    response.model = request_data
+        .original_model
+        .clone()
+        .unwrap_or(response.model);
     Ok(Json(response))
 }
 
@@ -49,6 +58,7 @@ async fn chat_completion(
 async fn chat_completion_stream(
     client: Client,
     Json(request): Json<ChatCompletionParameters>,
+    request_data: &AiRouterRequestData,
 ) -> Result<Sse<impl Stream<Item = anyhow::Result<Event>>>, AiRouterError<String>> {
     let mut stream = client
         .chat()
@@ -56,11 +66,14 @@ async fn chat_completion_stream(
         .await
         .map_err(|e| transform_openai_dive_apierror(&e))?;
 
+    let response_model = request_data.original_model.clone().unwrap_or(request.model);
+
     let response_stream = try_stream! {
         while let Some(response) = stream.next().await {
             match response {
-                Ok(response) => {
+                Ok(mut response) => {
                     tracing::debug!("{response:?}");
+                    response.model = response_model.clone();
                     yield Event::default().json_data(response)?;
                 }
                 Err(e) => tracing::error!("{e}"),

@@ -31,10 +31,11 @@ impl AiRouterRequestData {
     ) -> Result<Self, AiRouterError<String>> {
         let mut request_data: AiRouterRequestData = Self::new();
 
+        request_data.original_model = Some(String::from(model_name));
+
         if let Some(max_input) = model.max_input {
             if let Some(hf_model_name) = model.hf_model_name.clone() {
                 request_data.max_input = Some(max_input);
-                request_data.original_model = Some(String::from(model_name));
                 request_data.tokenizer = Tokenizers::get(&state.tokenizers, &hf_model_name);
             } else {
                 return Err(AiRouterError::InternalServerError::<String>(String::from(

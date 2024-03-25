@@ -45,7 +45,12 @@ pub async fn completion(
 
             match backend {
                 BackendTypes::OpenAI(c) => {
-                    return openai_routes::chat::wrap_chat_completion(c.clone(), request).await;
+                    return openai_routes::chat::wrap_chat_completion(
+                        c.clone(),
+                        request,
+                        &request_data,
+                    )
+                    .await;
                 }
                 BackendTypes::Triton(c) => {
                     return triton_routes::chat::compat_chat_completions(

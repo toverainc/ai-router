@@ -65,8 +65,11 @@ async fn chat_completions_stream(
     let id = format!("cmpl-{}", Uuid::new_v4());
     let created = u32::try_from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())?;
 
-    let model_name = request.model.clone();
     let request = build_triton_request(request, request_data)?;
+    let model_name = request_data
+        .original_model
+        .clone()
+        .unwrap_or(request.model_name.clone());
 
     let response_stream = try_stream! {
         let request_stream = stream! { yield request };
@@ -172,8 +175,11 @@ async fn chat_completions(
     Json(request): Json<ChatCompletionParameters>,
     request_data: &AiRouterRequestData,
 ) -> Result<Json<ChatCompletionResponse>, AiRouterError<String>> {
-    let model_name = request.model.clone();
     let request = build_triton_request(request, request_data)?;
+    let model_name = request_data
+        .original_model
+        .clone()
+        .unwrap_or(request.model_name.clone());
     let request_stream = stream! { yield request };
     let mut stream = client
         .model_stream_infer(tonic::Request::new(request_stream))

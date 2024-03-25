@@ -14,6 +14,7 @@ use crate::backend::triton::request::{Builder, InferTensorData};
 use crate::backend::triton::utils::get_output_idx;
 use crate::backend::triton::ModelInferRequest;
 use crate::errors::AiRouterError;
+use crate::request::AiRouterRequestData;
 
 const MODEL_OUTPUT_NAME: &str = "embedding";
 
@@ -21,6 +22,7 @@ const MODEL_OUTPUT_NAME: &str = "embedding";
 pub(crate) async fn embed(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<EmbeddingParameters>,
+    request_data: &AiRouterRequestData,
 ) -> Result<Json<EmbeddingResponse>, AiRouterError<String>> {
     tracing::debug!("triton embeddings request: {:?}", request);
 
@@ -31,8 +33,11 @@ pub(crate) async fn embed(
     };
     let mut dimensions: usize = 0;
 
-    let model_name = request.model.clone();
     let request = build_triton_request(request)?;
+    let model_name = request_data
+        .original_model
+        .clone()
+        .unwrap_or(request.model_name.clone());
     let request_stream = stream! { yield request };
     let mut stream = client
         .model_stream_infer(tonic::Request::new(request_stream))

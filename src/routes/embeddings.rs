@@ -10,6 +10,7 @@ use crate::backend::openai::routes as openai_routes;
 use crate::backend::triton::routes as triton_routes;
 use crate::config::AiRouterModelType;
 use crate::errors::AiRouterError;
+use crate::request::AiRouterRequestData;
 use crate::startup::{AppState, BackendTypes};
 
 #[instrument(name = "routes::embeddings::embed", skip(state, request))]
@@ -19,6 +20,12 @@ pub async fn embed(
 ) -> Response {
     if let Some(model) = state.config.models.get(&AiRouterModelType::Embeddings) {
         if let Some(model) = model.get(&request.model) {
+            let request_data = match AiRouterRequestData::build(model, &request.model, &state) {
+                Ok(d) => d,
+                Err(e) => {
+                    return e.into_response();
+                }
+            };
             if let Some(backend_model) = model.backend_model.clone() {
                 request.model = backend_model;
             }
@@ -37,12 +44,12 @@ pub async fn embed(
 
             match backend {
                 BackendTypes::OpenAI(c) => {
-                    return openai_routes::embeddings::embed(c.clone(), request)
+                    return openai_routes::embeddings::embed(c.clone(), request, &request_data)
                         .await
                         .into_response();
                 }
                 BackendTypes::Triton(c) => {
-                    return triton_routes::embeddings::embed(c.clone(), request)
+                    return triton_routes::embeddings::embed(c.clone(), request, &request_data)
                         .await
                         .into_response();
                 }
