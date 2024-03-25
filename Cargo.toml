@@ -19,7 +19,7 @@ path = "src/client/embed.rs"
 [dependencies]
 anyhow = { version = "1.0.81", features = ["backtrace"] }
 async-stream = "0.3.5"
-axum = "0.7.4"
+axum = "0.7.5"
 axum-prometheus = "0.6.1"
 axum-tracing-opentelemetry = "0.18.0"
 bytemuck = "1.15.0"
