@@ -20,7 +20,7 @@ pub async fn completion(
 ) -> Response {
     if let Some(models) = state.config.models.get(&AiRouterModelType::ChatCompletions) {
         if let Some(model) = models.get(&request.model) {
-            let request_data = match AiRouterRequestData::build(model, &request.model, &state) {
+            let mut request_data = match AiRouterRequestData::build(model, &request.model, &state) {
                 Ok(d) => d,
                 Err(e) => {
                     return e.into_response();
@@ -56,7 +56,7 @@ pub async fn completion(
                     return triton_routes::chat::compat_chat_completions(
                         c.clone(),
                         request,
-                        &request_data,
+                        &mut request_data,
                     )
                     .await;
                 }

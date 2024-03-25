@@ -34,7 +34,7 @@ const MODEL_OUTPUT_NAME: &str = "text_output";
 pub async fn compat_completions(
     client: GrpcInferenceServiceClient<Channel>,
     request: Json<CompletionCreateParams>,
-    request_data: &AiRouterRequestData,
+    request_data: &mut AiRouterRequestData,
 ) -> Response {
     tracing::debug!("request: {:?}", request);
 
@@ -56,7 +56,7 @@ pub async fn compat_completions(
 async fn completions_stream(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
-    request_data: &AiRouterRequestData,
+    request_data: &mut AiRouterRequestData,
 ) -> Result<Sse<impl Stream<Item = anyhow::Result<Event>>>, AiRouterError<String>> {
     let id = format!("cmpl-{}", Uuid::new_v4());
     let created = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
@@ -156,7 +156,7 @@ async fn completions_stream(
 async fn completions(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
-    request_data: &AiRouterRequestData,
+    request_data: &mut AiRouterRequestData,
 ) -> Result<Json<Completion>, AiRouterError<String>> {
     let request = build_triton_request(request, request_data)?;
     let model_name = request_data
@@ -197,6 +197,8 @@ async fn completions(
         contents.push(content);
     }
 
+    let prompt_tokens = request_data.prompt_tokens.try_into().unwrap_or(0);
+
     Ok(Json(Completion {
         id: format!("cmpl-{}", Uuid::new_v4()),
         object: "text_completion".to_string(),
@@ -208,19 +210,20 @@ async fn completions(
             logprobs: None,
             finish_reason: Some(FinishReason::StopSequenceReached),
         }],
-        // Not supported yet, need triton to return usage stats
-        // but add a fake one to make LangChain happy
+        // Not fully supported yet, need Triton to return usage stats
+        // but populate prompt_tokens and total_tokens for models configured with max_tokens
         usage: Some(Usage {
-            prompt_tokens: 0,
+            prompt_tokens,
             completion_tokens: Some(0),
-            total_tokens: 0,
+            // add completion_tokens once we can get them from Triton
+            total_tokens: prompt_tokens,
         }),
     }))
 }
 
 fn build_triton_request(
     request: CompletionCreateParams,
-    request_data: &AiRouterRequestData,
+    request_data: &mut AiRouterRequestData,
 ) -> Result<ModelInferRequest, AiRouterError<String>> {
     let input: String = request.prompt.join(" ");
     check_input_cc(&input, &request.model, request_data)?;

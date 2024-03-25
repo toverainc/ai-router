@@ -10,6 +10,7 @@ use crate::{
 pub struct AiRouterRequestData {
     pub max_input: Option<usize>,
     pub original_model: Option<String>,
+    pub prompt_tokens: usize,
     pub tokenizer: Option<Tokenizer>,
 }
 
@@ -18,6 +19,7 @@ impl AiRouterRequestData {
         Self {
             max_input: None,
             original_model: None,
+            prompt_tokens: 0,
             tokenizer: None,
         }
     }
@@ -54,7 +56,7 @@ impl AiRouterRequestData {
 pub fn check_input_cc(
     input: &str,
     model: &str,
-    request_data: &AiRouterRequestData,
+    request_data: &mut AiRouterRequestData,
 ) -> Result<(), AiRouterError<String>> {
     let model = request_data
         .original_model
@@ -63,10 +65,12 @@ pub fn check_input_cc(
     if let Some(max_input) = request_data.max_input {
         if let Some(tokenizer) = &request_data.tokenizer {
             if let Ok(encoded) = tokenizer.encode(input, false) {
-                let num_tokens = encoded.get_tokens().len();
-                if num_tokens > max_input {
+                request_data.prompt_tokens = encoded.get_tokens().len();
+                if request_data.prompt_tokens > max_input {
                     return Err(AiRouterError::InputExceededError::<String>(
-                        model, max_input, num_tokens,
+                        model,
+                        max_input,
+                        request_data.prompt_tokens,
                     ));
                 }
                 return Ok(());
