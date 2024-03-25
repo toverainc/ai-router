@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::extract::State;
+use axum::extract::State as AxumState;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use openai_dive::v1::resources::model::{ListModelResponse, Model};
@@ -10,7 +10,7 @@ use crate::errors::AiRouterError;
 use crate::startup::AppState;
 
 #[instrument(name = "routes::models::get", skip(state))]
-pub async fn get(State(state): State<Arc<AppState>>) -> Response {
+pub async fn get(AxumState(state): AxumState<Arc<AppState>>) -> Response {
     let mut model_names: Vec<String> = Vec::new();
 
     for model_type in state.config.models.keys() {

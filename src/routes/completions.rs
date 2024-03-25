@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::extract::State;
+use axum::extract::State as AxumState;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use tracing::instrument;
@@ -14,7 +14,7 @@ use crate::startup::{AppState, BackendTypes};
 
 #[instrument(name = "routes::completion::completions", skip(state, request))]
 pub async fn completion(
-    State(state): State<Arc<AppState>>,
+    AxumState(state): AxumState<Arc<AppState>>,
     mut request: Json<CompletionCreateParams>,
 ) -> Response {
     if let Some(models) = state.config.models.get(&AiRouterModelType::ChatCompletions) {
