@@ -18,8 +18,8 @@ pub async fn embed(
     State(state): State<Arc<AppState>>,
     mut request: Json<EmbeddingParameters>,
 ) -> Response {
-    if let Some(model) = state.config.models.get(&AiRouterModelType::Embeddings) {
-        if let Some(model) = model.get(&request.model) {
+    if let Some(models) = state.config.models.get(&AiRouterModelType::Embeddings) {
+        if let Some(model) = models.get(&request.model) {
             let request_data = match AiRouterRequestData::build(model, &request.model, &state) {
                 Ok(d) => d,
                 Err(e) => {
