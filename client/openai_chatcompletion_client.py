@@ -107,6 +107,7 @@ if FLAGS.stream:
 else:
     print("Chat completion results:")
     print(chat_completion.choices[0].message.content)
+    print(f"Usage statistics: {chat_completion.usage}")
 
 timing = time.time()
 response_time = timing - start_time
