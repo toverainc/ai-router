@@ -80,7 +80,7 @@ client = OpenAI(
 
 # We don't do prompt formatting in the proxy - yet
 # Mistral Instruct
-input = f'[INST] {FLAGS.input} [/INST]'
+input = f'{FLAGS.input}'
 
 start_time = time.time()
 

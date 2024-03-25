@@ -6,5 +6,6 @@ pub mod routes;
 pub mod startup;
 mod state;
 pub mod telemetry;
+mod templater;
 mod tokenizers;
 mod utils;

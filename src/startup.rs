@@ -21,6 +21,8 @@ use crate::state::State;
 /// - when we're unable to connect to the Triton endpoint
 /// - when we're unable to bind the `TCPListener` for the axum server
 /// - when we're unable to start the axum server
+/// # Panics
+/// - when we're unable to initialize the templater
 pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> {
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
 

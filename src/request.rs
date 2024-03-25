@@ -11,6 +11,7 @@ pub struct AiRouterRequestData {
     pub max_tokens: Option<u32>,
     pub original_model: Option<String>,
     pub prompt_tokens: usize,
+    pub template: Option<String>,
     pub tokenizer: Option<Tokenizer>,
 }
 
@@ -21,6 +22,7 @@ impl AiRouterRequestData {
             max_tokens: None,
             original_model: None,
             prompt_tokens: 0,
+            template: None,
             tokenizer: None,
         }
     }
@@ -51,6 +53,8 @@ impl AiRouterRequestData {
         if let Some(max_tokens) = model.max_tokens {
             request_data.max_tokens = Some(max_tokens);
         }
+
+        request_data.template.clone_from(&model.prompt_format);
 
         Ok(request_data)
     }

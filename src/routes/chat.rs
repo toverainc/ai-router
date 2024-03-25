@@ -48,6 +48,7 @@ pub async fn completion(
                         c.clone(),
                         request,
                         &mut request_data,
+                        state.templater.clone(),
                     )
                     .await);
                 }
