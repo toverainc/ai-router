@@ -2,9 +2,7 @@ use std::sync::Arc;
 
 use tokenizers::Tokenizer;
 
-use crate::{
-    config::AiRouterModel, errors::AiRouterError, startup::AppState, tokenizers::Tokenizers,
-};
+use crate::{config::AiRouterModel, errors::AiRouterError, state::State, tokenizers::Tokenizers};
 
 #[derive(Debug)]
 pub struct AiRouterRequestData {
@@ -29,7 +27,7 @@ impl AiRouterRequestData {
     pub fn build(
         model: &AiRouterModel,
         model_name: &str,
-        state: &Arc<AppState>,
+        state: &Arc<State>,
     ) -> Result<Self, AiRouterError<String>> {
         let mut request_data: AiRouterRequestData = Self::new();
 

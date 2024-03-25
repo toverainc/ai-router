@@ -11,11 +11,11 @@ use crate::backend::triton::routes as triton_routes;
 use crate::config::AiRouterModelType;
 use crate::errors::AiRouterError;
 use crate::request::AiRouterRequestData;
-use crate::startup::{AppState, BackendTypes};
+use crate::state::{BackendTypes, State};
 
 #[instrument(name = "routes::embeddings::embed", skip(state, request))]
 pub async fn embed(
-    AxumState(state): AxumState<Arc<AppState>>,
+    AxumState(state): AxumState<Arc<State>>,
     mut request: Json<EmbeddingParameters>,
 ) -> Response {
     if let Some(models) = state.config.models.get(&AiRouterModelType::Embeddings) {

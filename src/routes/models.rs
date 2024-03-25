@@ -7,10 +7,10 @@ use openai_dive::v1::resources::model::{ListModelResponse, Model};
 use tracing::instrument;
 
 use crate::errors::AiRouterError;
-use crate::startup::AppState;
+use crate::state::State;
 
 #[instrument(name = "routes::models::get", skip(state))]
-pub async fn get(AxumState(state): AxumState<Arc<AppState>>) -> Response {
+pub async fn get(AxumState(state): AxumState<Arc<State>>) -> Response {
     let mut model_names: Vec<String> = Vec::new();
 
     for model_type in state.config.models.keys() {

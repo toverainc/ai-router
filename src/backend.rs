@@ -8,7 +8,7 @@ use tonic::transport::Channel;
 
 use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
 use crate::config::{AiRouterBackendType, AiRouterConfigFile};
-use crate::startup::BackendTypes;
+use crate::state::BackendTypes;
 
 pub(crate) async fn init_backends(
     config: &AiRouterConfigFile,

@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::sync::Arc;
 
 use axum::response::IntoResponse;
@@ -6,9 +5,7 @@ use axum::routing::{get, post};
 use axum::Router;
 use axum_prometheus::PrometheusMetricLayer;
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
-use openai_dive::v1::api::Client as OpenAIClient;
 use tokio::net::TcpListener;
-use tonic::transport::Channel;
 use tower::ServiceBuilder;
 use tower_http::request_id::MakeRequestUuid;
 use tower_http::{
@@ -19,24 +16,11 @@ use tower_http::{
 use tracing::Level;
 
 use crate::backend::init_backends;
-use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
 use crate::config::AiRouterConfigFile;
 use crate::errors::AiRouterError;
 use crate::routes;
+use crate::state::State;
 use crate::tokenizers::Tokenizers;
-
-#[derive(Debug)]
-pub struct AppState {
-    pub backends: HashMap<String, BackendTypes<OpenAIClient, GrpcInferenceServiceClient<Channel>>>,
-    pub config: AiRouterConfigFile,
-    pub tokenizers: Tokenizers,
-}
-
-#[derive(Debug)]
-pub enum BackendTypes<O, T> {
-    OpenAI(O),
-    Triton(T),
-}
 
 /// Start axum server
 ///
@@ -49,7 +33,7 @@ pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> 
 
     let backends = init_backends(config_file).await;
     let tokenizers = Tokenizers::new(&config_file.models);
-    let state = AppState {
+    let state = State {
         backends,
         config: config_file.clone(),
         tokenizers,

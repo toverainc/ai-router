@@ -10,11 +10,11 @@ use crate::backend::triton::routes::completions::CompletionCreateParams;
 use crate::config::AiRouterModelType;
 use crate::errors::AiRouterError;
 use crate::request::AiRouterRequestData;
-use crate::startup::{AppState, BackendTypes};
+use crate::state::{BackendTypes, State};
 
 #[instrument(name = "routes::completion::completions", skip(state, request))]
 pub async fn completion(
-    AxumState(state): AxumState<Arc<AppState>>,
+    AxumState(state): AxumState<Arc<State>>,
     mut request: Json<CompletionCreateParams>,
 ) -> Response {
     if let Some(models) = state.config.models.get(&AiRouterModelType::ChatCompletions) {
