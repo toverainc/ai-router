@@ -11,6 +11,7 @@ use serde_with::{formats::PreferMany, serde_as, skip_serializing_none, OneOrMany
 use uuid::Uuid;
 
 const DEFAULT_CONFIG_FILE: &str = "/etc/ai-router.toml";
+const DEFAULT_TEMPLATE_DIR: &str = "/etc/ai-router/templates";
 
 pub type AiRouterModels = HashMap<AiRouterModelType, HashMap<String, AiRouterModel>>;
 
@@ -161,6 +162,8 @@ pub struct AiRouterDaemon {
     #[serde(default = "default_max_body_size")]
     pub max_body_size: usize,
     pub otlp_endpoint: Option<String>,
+    #[serde(default = "default_template_dir")]
+    pub template_dir: String,
 }
 
 #[skip_serializing_none]
@@ -193,6 +196,10 @@ fn default_instance_id() -> String {
 
 const fn default_max_body_size() -> usize {
     2
+}
+
+fn default_template_dir() -> String {
+    String::from(DEFAULT_TEMPLATE_DIR)
 }
 
 #[cfg(test)]

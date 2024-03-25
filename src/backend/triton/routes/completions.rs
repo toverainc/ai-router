@@ -23,40 +23,43 @@ use crate::backend::triton::utils::get_output_idx;
 use crate::backend::triton::ModelInferRequest;
 use crate::errors::AiRouterError;
 use crate::request::{check_input_cc, AiRouterRequestData};
+use crate::templater::{TemplateType, Templater};
 use crate::utils::{deserialize_bytes_tensor, string_or_seq_string};
 
 const MAX_TOKENS: u32 = 131_072;
 const MODEL_OUTPUT_NAME: &str = "text_output";
 
-#[instrument(skip(client, request, request_data))]
+#[instrument(skip(client, request, request_data, templater))]
 pub async fn compat_completions(
     client: GrpcInferenceServiceClient<Channel>,
     request: Json<CompletionCreateParams>,
     request_data: &mut AiRouterRequestData,
+    templater: Templater,
 ) -> Response {
     tracing::debug!("request: {:?}", request);
 
     if request.stream {
-        completions_stream(client, request, request_data)
+        completions_stream(client, request, request_data, templater)
             .await
             .into_response()
     } else {
-        completions(client, request, request_data)
+        completions(client, request, request_data, templater)
             .await
             .into_response()
     }
 }
 
-#[instrument(skip(client, request, request_data))]
+#[instrument(skip(client, request, request_data, templater))]
 async fn completions_stream(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
     request_data: &mut AiRouterRequestData,
+    templater: Templater,
 ) -> Result<Sse<impl Stream<Item = anyhow::Result<Event>>>, AiRouterError<String>> {
     let id = format!("cmpl-{}", Uuid::new_v4());
     let created = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
 
-    let request = build_triton_request(request, request_data)?;
+    let request = build_triton_request(request, request_data, templater)?;
     let model_name = request_data
         .original_model
         .clone()
@@ -150,13 +153,14 @@ async fn completions_stream(
     Ok(Sse::new(response_stream).keep_alive(KeepAlive::default()))
 }
 
-#[instrument(skip(client, request, request_data), err(Debug))]
+#[instrument(skip(client, request, request_data, templater), err(Debug))]
 async fn completions(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
     request_data: &mut AiRouterRequestData,
+    templater: Templater,
 ) -> Result<Json<Completion>, AiRouterError<String>> {
-    let request = build_triton_request(request, request_data)?;
+    let request = build_triton_request(request, request_data, templater)?;
     let model_name = request_data
         .original_model
         .clone()
@@ -222,8 +226,13 @@ async fn completions(
 fn build_triton_request(
     request: CompletionCreateParams,
     request_data: &mut AiRouterRequestData,
+    templater: Templater,
 ) -> Result<ModelInferRequest, AiRouterError<String>> {
-    let input: String = request.prompt.join(" ");
+    let input = templater.apply_completions(
+        &request.prompt,
+        request_data.template.clone(),
+        &TemplateType::LegacyCompletion,
+    )?;
     check_input_cc(&input, &request.model, request_data)?;
 
     let mut builder = Builder::new()
@@ -231,13 +240,7 @@ fn build_triton_request(
         .input(
             "text_input",
             [1, 1],
-            InferTensorData::Bytes(
-                request
-                    .prompt
-                    .into_iter()
-                    .map(|s| s.as_bytes().to_vec())
-                    .collect(),
-            ),
+            InferTensorData::Bytes(vec![input.as_bytes().to_vec()]),
         )
         .input(
             "max_tokens",

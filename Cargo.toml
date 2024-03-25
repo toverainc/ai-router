@@ -26,6 +26,7 @@ bytemuck = "1.16.0"
 bytes = "1.6.0"
 clap = { version = "4.5.4", features = ["derive"] }
 figment = { version = "0.10.19", features = ["env", "toml"] }
+minijinja = { version = "1.0.21", features = ["loader"] }
 openai_dive = { version = "0.4.8", default-features = false, features = ["rustls-tls", "stream", "tokio", "tokio-util"] }
 opentelemetry = { version = "0.23.0", features = ["metrics"] }
 opentelemetry-jaeger-propagator = "0.2.0"

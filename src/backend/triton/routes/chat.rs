@@ -26,40 +26,43 @@ use crate::backend::triton::utils::get_output_idx;
 use crate::backend::triton::ModelInferRequest;
 use crate::errors::AiRouterError;
 use crate::request::{check_input_cc, AiRouterRequestData};
+use crate::templater::{TemplateType, Templater};
 use crate::utils::deserialize_bytes_tensor;
 
 const MAX_TOKENS: u32 = 131_072;
 const MODEL_OUTPUT_NAME: &str = "text_output";
 
-#[instrument(skip(client, request, request_data))]
+#[instrument(skip(client, request, request_data, templater))]
 pub async fn compat_chat_completions(
     client: GrpcInferenceServiceClient<Channel>,
     request: Json<ChatCompletionParameters>,
     request_data: &mut AiRouterRequestData,
+    templater: Templater,
 ) -> Response {
     tracing::debug!("request: {:?}", request);
 
     if request.stream.unwrap_or(false) {
-        chat_completions_stream(client, request, request_data)
+        chat_completions_stream(client, request, request_data, templater)
             .await
             .into_response()
     } else {
-        chat_completions(client, request, request_data)
+        chat_completions(client, request, request_data, templater)
             .await
             .into_response()
     }
 }
 
-#[instrument(skip(client, request, request_data))]
+#[instrument(skip(client, request, request_data, templater))]
 async fn chat_completions_stream(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<ChatCompletionParameters>,
     request_data: &mut AiRouterRequestData,
+    templater: Templater,
 ) -> Result<Sse<impl Stream<Item = anyhow::Result<Event>>>, AiRouterError<String>> {
     let id = format!("cmpl-{}", Uuid::new_v4());
     let created = u32::try_from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())?;
 
-    let request = build_triton_request(request, request_data)?;
+    let request = build_triton_request(request, request_data, templater)?;
     let model_name = request_data
         .original_model
         .clone()
@@ -159,13 +162,14 @@ async fn chat_completions_stream(
     Ok(Sse::new(response_stream).keep_alive(KeepAlive::default()))
 }
 
-#[instrument(skip(client, request, request_data), err(Debug))]
+#[instrument(skip(client, request, request_data, templater), err(Debug))]
 async fn chat_completions(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<ChatCompletionParameters>,
     request_data: &mut AiRouterRequestData,
+    templater: Templater,
 ) -> Result<Json<ChatCompletionResponse>, AiRouterError<String>> {
-    let request = build_triton_request(request, request_data)?;
+    let request = build_triton_request(request, request_data, templater)?;
     let model_name = request_data
         .original_model
         .clone()
@@ -237,18 +241,21 @@ async fn chat_completions(
 fn build_triton_request(
     request: ChatCompletionParameters,
     request_data: &mut AiRouterRequestData,
+    templater: Templater,
 ) -> Result<ModelInferRequest, AiRouterError<String>> {
-    let chat_history = build_chat_history(request.messages);
-    tracing::debug!("chat history after formatting: {}", chat_history);
-
-    check_input_cc(&chat_history, &request.model, request_data)?;
+    let input = templater.apply_completions(
+        &request.messages,
+        request_data.template.clone(),
+        &TemplateType::ChatCompletion,
+    )?;
+    check_input_cc(&input, &request.model, request_data)?;
 
     let mut builder = Builder::new()
         .model_name(request.model)
         .input(
             "text_input",
             [1, 1],
-            InferTensorData::Bytes(vec![chat_history.as_bytes().to_vec()]),
+            InferTensorData::Bytes(vec![input.as_bytes().to_vec()]),
         )
         .input(
             "bad_words",
@@ -316,40 +323,6 @@ fn build_triton_request(
     }
 
     Ok(builder.build().context("failed to build triton request")?)
-}
-
-fn build_chat_history(messages: Vec<ChatMessage>) -> String {
-    let mut history = String::new();
-    for message in messages {
-        let ChatMessageContent::Text(content) = message.content else {
-            continue;
-        };
-        match message.role {
-            Role::System => {
-                if let Some(name) = message.name {
-                    history.push_str(&format!("System {name}: {content}\n"));
-                } else {
-                    history.push_str(&format!("System: {content}\n"));
-                }
-            }
-            Role::User => {
-                if let Some(name) = message.name {
-                    history.push_str(&format!("User {name}: {content}\n"));
-                } else {
-                    history.push_str(&format!("User: {content}\n"));
-                }
-            }
-            Role::Assistant => {
-                history.push_str(&format!("Assistant: {content}\n"));
-            }
-            Role::Tool => {
-                history.push_str(&format!("Tool: {content}\n"));
-            }
-            Role::Function => {}
-        }
-    }
-    history.push_str("ASSISTANT:");
-    history
 }
 
 fn string_vec_to_byte_vecs(strings: &Vec<String>) -> Vec<Vec<u8>> {
