@@ -1,0 +1,13 @@
+title = "test no models"
+
+[daemon]
+listen_ip = "0.0.0.0"
+listen_port = 3000
+
+[backends]
+
+[backends.triton]
+type = "triton"
+base_url = "http://127.0.0.1:8001"
+
+[models]

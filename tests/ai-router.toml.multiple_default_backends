@@ -17,3 +17,5 @@ base_url = "http://127.0.1.2:8001"
 default = true
 
 [models]
+
+[models.chat_completions.model]

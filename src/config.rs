@@ -108,6 +108,13 @@ impl AiRouterConfigFile {
         Ok(())
     }
 
+    fn check_models(&self) -> Result<()> {
+        if self.models.is_empty() {
+            return Err(anyhow!("no models defined in config file"));
+        }
+        Ok(())
+    }
+
     fn num_default_backends(&self) -> usize {
         let mut num_default_backends = 0;
 
@@ -122,6 +129,7 @@ impl AiRouterConfigFile {
 
     fn validate(&self) -> Result<()> {
         self.check_backends()?;
+        self.check_models()?;
         self.check_default_backends()?;
         self.check_default_models()?;
         self.check_model_backends()?;
@@ -253,6 +261,21 @@ mod tests {
     fn test_no_default_backend() {
         let config: Result<AiRouterConfigFile> =
             AiRouterConfigFile::parse(String::from("tests/ai-router.toml.no_default_backend"));
+
+        match config {
+            Ok(o) => println!(
+                "{}",
+                serde_json::to_string_pretty(&o).expect("failed to convert config file to JSON")
+            ),
+            Err(e) => panic!("{e:?}"),
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "config file validation failed: no models defined in config file")]
+    fn test_no_models() {
+        let config: Result<AiRouterConfigFile> =
+            AiRouterConfigFile::parse(String::from("tests/ai-router.toml.no_models"));
 
         match config {
             Ok(o) => println!(
