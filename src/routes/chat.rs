@@ -43,7 +43,7 @@ pub async fn completion(
                 .into_response();
             };
 
-            match backend {
+            match &backend.client {
                 BackendTypes::OpenAI(c) => {
                     return openai_routes::chat::wrap_chat_completion(
                         c.clone(),

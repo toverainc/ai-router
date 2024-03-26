@@ -7,19 +7,26 @@ use openai_dive::v1::api::Client as OpenAIClient;
 use tonic::transport::Channel;
 
 use crate::backend::triton::grpc_inference_service_client::GrpcInferenceServiceClient;
-use crate::config::{AiRouterBackendType, AiRouterConfigFile};
+use crate::config::{AiRouterBackend, AiRouterBackendType, AiRouterConfigFile};
 use crate::state::BackendTypes;
 
-pub(crate) async fn init_backends(
-    config: &AiRouterConfigFile,
-) -> HashMap<String, BackendTypes<OpenAIClient, GrpcInferenceServiceClient<Channel>>> {
-    let mut map = HashMap::new();
+type BackendClient = BackendTypes<OpenAIClient, GrpcInferenceServiceClient<Channel>>;
+pub type Backends = HashMap<String, Backend>;
 
-    for (name, backend) in &config.backends {
-        match backend.backend_type {
+#[derive(Debug)]
+pub struct Backend {
+    pub client: BackendClient,
+}
+
+impl Backend {
+    /// # Panics
+    /// - when trying to initialize an `OpenAI` backend without API key
+    /// - when unable to connect to a Trinton backend
+    pub async fn new(name: &String, backend: &AiRouterBackend) -> Self {
+        let client: BackendClient = match backend.backend_type {
             AiRouterBackendType::OpenAI => {
                 println!("initializing OpenAI backend {name}");
-                let backend_client = OpenAIClient {
+                BackendClient::OpenAI(OpenAIClient {
                     api_key: backend
                         .api_key
                         .as_ref()
@@ -28,37 +35,37 @@ pub(crate) async fn init_backends(
                     base_url: backend.base_url.clone(),
                     http_client: reqwest::Client::new(),
                     organization: None,
-                };
-                map.insert(name.clone(), BackendTypes::OpenAI(backend_client.clone()));
-
-                if backend.default.unwrap_or(false) {
-                    map.insert(
-                        String::from("default"),
-                        BackendTypes::OpenAI(backend_client.clone()),
-                    );
-                }
+                })
             }
             AiRouterBackendType::Triton => {
                 println!("initializing Triton backend {name}");
-                let backend_client = GrpcInferenceServiceClient::connect(backend.base_url.clone())
-                    .await
-                    .unwrap_or_else(|e| {
-                        panic!(
-                            "failed to connect to Triton backend {name} ({}): {e:?}",
-                            backend.base_url
-                        )
-                    });
-                map.insert(name.clone(), BackendTypes::Triton(backend_client.clone()));
-
-                if backend.default.unwrap_or(false) {
-                    map.insert(
-                        String::from("default"),
-                        BackendTypes::Triton(backend_client.clone()),
-                    );
-                }
+                BackendClient::Triton(
+                    GrpcInferenceServiceClient::connect(backend.base_url.clone())
+                        .await
+                        .unwrap_or_else(|e| {
+                            panic!(
+                                "failed to connect to Triton backend {name} ({}): {e:?}",
+                                backend.base_url
+                            )
+                        }),
+                )
             }
-        }
+        };
+
+        Self { client }
     }
 
-    map
+    pub async fn init(config: &AiRouterConfigFile) -> HashMap<String, Backend> {
+        let mut map: Backends = HashMap::new();
+
+        for (name, backend) in &config.backends {
+            map.insert(name.clone(), Backend::new(name, backend).await);
+
+            if backend.default.unwrap_or(false) {
+                map.insert(String::from("default"), Backend::new(name, backend).await);
+            }
+        }
+
+        map
+    }
 }

@@ -7,7 +7,7 @@ use axum_prometheus::PrometheusMetricLayer;
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use tokio::net::TcpListener;
 
-use crate::backend::init_backends;
+use crate::backend::Backend;
 use crate::config::AiRouterConfigFile;
 use crate::errors::AiRouterError;
 use crate::routes;
@@ -23,7 +23,7 @@ use crate::tokenizers::Tokenizers;
 pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> {
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
 
-    let backends = init_backends(config_file).await;
+    let backends = Backend::init(config_file).await;
     let tokenizers = Tokenizers::new(&config_file.models);
     let state = State {
         backends,

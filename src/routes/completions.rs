@@ -36,13 +36,14 @@ pub async fn completion(
             };
 
             let Some(backend) = state.backends.get(model_backend) else {
+                tracing::warn!("backend: {:#?}", state.backends);
                 return AiRouterError::InternalServerError::<String>(format!(
                     "backend {model_backend} not found"
                 ))
                 .into_response();
             };
 
-            match backend {
+            match &backend.client {
                 BackendTypes::OpenAI(_) => {
                     return "legacy completions not supported in OpenAI backend".into_response();
                 }

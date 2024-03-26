@@ -42,7 +42,7 @@ pub async fn embed(
                 .into_response();
             };
 
-            match backend {
+            match &backend.client {
                 BackendTypes::OpenAI(c) => {
                     return openai_routes::embeddings::embed(c.clone(), request, &request_data)
                         .await
