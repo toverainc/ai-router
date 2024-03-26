@@ -1,0 +1,17 @@
+title = "test missing prompt format template"
+
+[daemon]
+listen_ip = "0.0.0.0"
+listen_port = 3000
+
+[backends]
+
+[backends.triton]
+type = "triton"
+base_url = "http://127.0.1.1:8001"
+default = true
+
+[models]
+
+[models.chat_completions.model]
+prompt_format = "85Hq9cqyMpgAChszZ2uqvh"

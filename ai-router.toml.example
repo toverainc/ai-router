@@ -89,7 +89,7 @@ backend = "my_triton_instance"
 # Override model in request sent to backend
 backend_model = "some_other_name_in_triton"
 # Prompt format
-prompt_format = "mistral"
+#prompt_format = "mistral"
 # Select this model if model name in client request is not defined in config
 default = true
 # Return error if client sends an input larger than this
