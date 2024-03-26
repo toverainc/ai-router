@@ -1,0 +1,17 @@
+title = "test default backend"
+
+[daemon]
+listen_ip = "0.0.0.0"
+listen_port = 3000
+
+[backends]
+
+[backends.openai]
+api_key = "bogus"
+base_url = "http://localhost:8001"
+default = true
+type = "openai"
+
+[models]
+
+[models.chat_completions.model]

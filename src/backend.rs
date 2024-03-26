@@ -69,3 +69,21 @@ impl Backend {
         map
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::config::AiRouterConfigFile;
+
+    use super::Backend;
+
+    #[tokio::test]
+    async fn test_default_backend() {
+        let config_file =
+            AiRouterConfigFile::parse(String::from("tests/ai-router.toml.default_backend"))
+                .expect("failed to load test config file");
+
+        let backends = Backend::init(&config_file).await;
+
+        assert!(backends.contains_key("default"));
+    }
+}
