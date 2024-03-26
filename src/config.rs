@@ -58,6 +58,13 @@ impl AiRouterConfigFile {
         Ok(config)
     }
 
+    fn check_backends(&self) -> Result<()> {
+        if self.backends.is_empty() {
+            return Err(anyhow!("no backends defined in config file"));
+        }
+        Ok(())
+    }
+
     fn check_default_backends(&self) -> Result<()> {
         if self.num_default_backends() > 1 {
             return Err(anyhow!("multiple backends set as default"));
@@ -114,6 +121,7 @@ impl AiRouterConfigFile {
     }
 
     fn validate(&self) -> Result<()> {
+        self.check_backends()?;
         self.check_default_backends()?;
         self.check_default_models()?;
         self.check_model_backends()?;
@@ -215,6 +223,21 @@ mod tests {
     fn test_model_backend_invalid() {
         let config: Result<AiRouterConfigFile> =
             AiRouterConfigFile::parse(String::from("tests/ai-router.toml.model_backend_invalid"));
+
+        match config {
+            Ok(o) => println!(
+                "{}",
+                serde_json::to_string_pretty(&o).expect("failed to convert config file to JSON")
+            ),
+            Err(e) => panic!("{e:?}"),
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "config file validation failed: no backends defined in config file")]
+    fn test_no_backends() {
+        let config: Result<AiRouterConfigFile> =
+            AiRouterConfigFile::parse(String::from("tests/ai-router.toml.no_backends"));
 
         match config {
             Ok(o) => println!(

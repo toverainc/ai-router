@@ -1,4 +1,4 @@
-title = "test multiple default backends"
+title = "test invalid model backend"
 
 [daemon]
 listen_ip = "0.0.0.0"
@@ -6,8 +6,9 @@ listen_port = 3000
 
 [backends]
 
-[backend.triton]
-
+[backends.triton]
+type = "triton"
+base_url = "http://127.0.0.1:8001"
 
 [models]
 
