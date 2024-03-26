@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::Path};
 
 use anyhow::{anyhow, Result};
 use clap::Parser;
@@ -124,6 +124,42 @@ impl AiRouterConfigFile {
         Ok(())
     }
 
+    fn check_templates(&self) -> Result<()> {
+        for (model_type, models) in &self.models {
+            match model_type {
+                AiRouterModelType::AudioSpeech
+                | AiRouterModelType::AudioTranscriptions
+                | AiRouterModelType::Embeddings => (),
+                AiRouterModelType::ChatCompletions => {
+                    for (model_name, model) in models {
+                        if let Some(prompt_format) = &model.prompt_format {
+                            let path_chat =
+                                format!("{}/chat/{}.j2", self.daemon.template_dir, prompt_format);
+
+                            if !Path::new(&path_chat).exists() {
+                                return Err(anyhow!(
+                                    "model `{model_name}` has prompt_format configured but template for chat completions ({path_chat}) is missing",
+                                ));
+                            };
+
+                            let path_completions = format!(
+                                "{}/completions/{}.j2",
+                                self.daemon.template_dir, prompt_format
+                            );
+
+                            if !Path::new(&path_completions).exists() {
+                                return Err(anyhow!(
+                                    "model `{model_name}` has prompt_format configured but template legacy completions ({path_completions}) is missing",
+                                ));
+                            };
+                        }
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
     fn num_default_backends(&self) -> usize {
         let mut num_default_backends = 0;
 
@@ -142,6 +178,7 @@ impl AiRouterConfigFile {
         self.check_default_backends()?;
         self.check_default_models()?;
         self.check_model_backends()?;
+        self.check_templates()?;
 
         Ok(())
     }
@@ -301,6 +338,23 @@ mod tests {
     fn test_no_models() {
         let config: Result<AiRouterConfigFile> =
             AiRouterConfigFile::parse(String::from("tests/ai-router.toml.no_models"));
+
+        match config {
+            Ok(o) => println!(
+                "{}",
+                serde_json::to_string_pretty(&o).expect("failed to convert config file to JSON")
+            ),
+            Err(e) => panic!("{e:?}"),
+        }
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "config file validation failed: model `model` has prompt_format configured but template for"
+    )]
+    fn test_template_missing() {
+        let config: Result<AiRouterConfigFile> =
+            AiRouterConfigFile::parse(String::from("tests/ai-router.toml.template_missing"));
 
         match config {
             Ok(o) => println!(
