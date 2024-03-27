@@ -18,7 +18,7 @@ use crate::request::AiRouterRequestData;
 
 const MODEL_OUTPUT_NAME: &str = "embedding";
 
-#[instrument(skip(client, request))]
+#[instrument(skip(client, request, request_data))]
 pub(crate) async fn embed(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<EmbeddingParameters>,
