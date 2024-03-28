@@ -19,6 +19,7 @@ Point your clients at AI Router and use any combination of Triton Inference Serv
 - Low system resource utilization (Rust FTW).
 - Streaming support with fixups for Triton Inference Server (required ATM).
 - Support mix of client stream request/stream to backend.
+- Extend/override config using environment variables
 - More to come!
 
 ### Supported Inference Types vs Backend Types
@@ -32,6 +33,103 @@ Point your clients at AI Router and use any combination of Triton Inference Serv
 | Embeddings                   | :white_check_mark: | :white_check_mark: |
 | Images                       | :x:                | :x:                |
 | Legacy Completions           | :x:                | :white_check_mark: |
+
+### Extend or Override Config Using Environment Variables
+
+You might not want to define sensitive data like API keys in a plain-text file. With AI Router, you can leave out sensitive data from the TOML config and set it using environment variables instead.
+
+Imagine the following TOML config in test.toml:
+
+```toml
+title = "test backend api_key from env"
+
+[daemon]
+listen_ip = "0.0.0.0"
+listen_port = 3000
+
+[backends]
+
+[backends.openai]
+type = "openai"
+base_url = "https://api.openai.com/v1"
+
+[models]
+
+[models.chat_completions.gpt-4-1106-preview]
+backend = "openai"
+```
+
+Starting ai-router with this config would fail with this error:
+
+`OpenAI backend openai-api-key-from-env is missing API key`
+
+However, if there is an environment variable `AI_ROUTER_BACKENDS_OPENAI`
+with value `{api_key=some_api_key}`, it will use some_api_key. This way,
+there is no need to have API keys in plaintext files.
+
+Here is a demonstration using the --dump-config flag:
+
+```
+❯ target/debug/ai-router --config-file test.toml --dump-config
+title = "test backend api_key from env"
+
+[backends.openai]
+type = "openai"
+base_url = "https://api.openai.com/v1"
+
+[daemon]
+api_key = []
+instance_id = "fff0673e-c34b-4a6e-8034-8591df1845c5"
+listen_ip = "0.0.0.0"
+listen_port = 3000
+template_dir = "/etc/ai-router/templates"
+
+[models.chat_completions.gpt-4-1106-preview]
+backend = "openai"
+
+➜ AI_ROUTER_BACKENDS_OPENAI='{api_key=very_secret_api_key}' target/debug/ai-router --config-file test.toml --dump-config
+title = "test backend api_key from env"
+
+[backends.openai]
+api_key = "very_secret_api_key"
+type = "openai"
+base_url = "https://api.openai.com/v1"
+
+[daemon]
+api_key = []
+instance_id = "af6c5187-7aee-4b5f-9567-e19a7690d292"
+listen_ip = "0.0.0.0"
+listen_port = 3000
+template_dir = "/etc/ai-router/templates"
+
+[models.chat_completions.gpt-4-1106-preview]
+backend = "openai"
+```
+
+You could also define an entire backend that doesn't exist in the config file at all:
+```
+➜ AI_ROUTER_BACKENDS_ANYSCALE='{api_key=very_secret_api_key,type=openai,base_url=https://api.endpoints.anyscale.com/v1}' target/debug/ai-router --config-file test.toml --dump-config
+title = "test backend api_key from env"
+
+[backends.openai]
+type = "openai"
+base_url = "https://api.openai.com/v1"
+
+[backends.anyscale]
+api_key = "very_secret_api_key"
+type = "openai"
+base_url = "https://api.endpoints.anyscale.com/v1"
+
+[daemon]
+api_key = []
+instance_id = "524dba5a-5736-4168-b64b-814569b91217"
+listen_ip = "0.0.0.0"
+listen_port = 3000
+template_dir = "/etc/ai-router/templates"
+
+[models.chat_completions.gpt-4-1106-preview]
+backend = "openai"
+```
 
 ## Usage Example
 
