@@ -8,4 +8,5 @@ mod state;
 pub mod telemetry;
 mod templater;
 mod tokenizers;
+mod tracing;
 mod utils;

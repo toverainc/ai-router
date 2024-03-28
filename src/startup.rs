@@ -1,3 +1,4 @@
+use std::net::SocketAddr;
 use std::sync::Arc;
 
 use axum::extract::DefaultBodyLimit;
@@ -9,11 +10,13 @@ use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer}
 use tokio::net::TcpListener;
 use tokio::signal::unix::{signal, SignalKind};
 use tower_http::limit::RequestBodyLimitLayer;
+use tower_http::trace::TraceLayer;
 
 use crate::config::AiRouterConfigFile;
 use crate::errors::AiRouterError;
 use crate::routes;
 use crate::state::State;
+use crate::tracing::{tl_access_log_make_span, tl_on_reponse};
 
 /// Start axum server
 ///
@@ -25,6 +28,10 @@ use crate::state::State;
 /// - when we're unable to initialize the templater
 pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> {
     let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
+
+    let tl_access_log = TraceLayer::new_for_http()
+        .make_span_with(tl_access_log_make_span)
+        .on_response(tl_on_reponse);
 
     let state = State::new(config_file).await;
 
@@ -42,6 +49,7 @@ pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> 
         .route("/metrics", get(|| async move { metric_handle.render() }))
         .fallback(fallback)
         .with_state(Arc::new(state))
+        .layer(tl_access_log)
         .layer(prometheus_layer)
         .layer(OtelInResponseLayer)
         .layer(OtelAxumLayer::default())
@@ -58,9 +66,12 @@ pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> 
 
     let listener = TcpListener::bind(address).await?;
 
-    axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown_signal())
-        .await?;
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .with_graceful_shutdown(shutdown_signal())
+    .await?;
 
     Ok(())
 }
