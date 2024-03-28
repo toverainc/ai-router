@@ -2,6 +2,10 @@ use std::collections::HashMap;
 
 use anyhow::{anyhow, Result};
 use clap::Parser;
+use figment::{
+    providers::{Env, Format, Toml},
+    Figment,
+};
 use serde::{Deserialize, Serialize};
 use serde_with::{formats::PreferMany, serde_as, skip_serializing_none, OneOrMany};
 use uuid::Uuid;
@@ -52,8 +56,10 @@ impl AiRouterConfigFile {
     /// - when file at path cannot be opened
     /// - when file content cannot be deserialized into `AiRouterConfigFile`
     pub fn parse(path: String) -> Result<Self> {
-        let config = std::fs::read_to_string(path)?;
-        let config: Self = toml::from_str(&config)?;
+        let config: Self = Figment::new()
+            .merge(Toml::file(path))
+            .merge(Env::prefixed("AI_ROUTER_").split("_"))
+            .extract()?;
         if let Err(e) = config.validate() {
             return Err(anyhow!("config file validation failed: {e}"));
         }

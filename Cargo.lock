@@ -798,6 +798,7 @@ dependencies = [
  "atomic",
  "pear",
  "serde",
+ "toml",
  "uncased",
  "version_check",
 ]
