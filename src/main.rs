@@ -17,6 +17,16 @@ async fn main() -> anyhow::Result<()> {
 
     let config_file = AiRouterConfigFile::parse(args.config_file.clone())?;
 
+    if args.dump_config {
+        println!(
+            "{}",
+            toml::to_string(&config_file).unwrap_or_else(|e| {
+                panic!("failed to dump config file: {e}");
+            })
+        );
+        return Ok(());
+    }
+
     telemetry::init_subscriber("ai_router", "info", &config_file.daemon)?;
 
     startup::run_server(&config_file).await

@@ -168,6 +168,8 @@ pub struct AiRouterModel {
 pub struct AiRouterArguments {
     #[arg(long, short = 'c', default_value_t = String::from(DEFAULT_CONFIG_FILE))]
     pub config_file: String,
+    #[arg(long, short = 'd', default_value_t = false)]
+    pub dump_config: bool,
 }
 
 fn default_api_key() -> Vec<String> {
