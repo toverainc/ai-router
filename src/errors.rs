@@ -25,8 +25,13 @@ where
     }
 }
 
-impl<T> IntoResponse for AiRouterError<T> {
+impl<T> IntoResponse for AiRouterError<T>
+where
+    T: std::fmt::Debug,
+{
     fn into_response(self) -> Response {
+        tracing::error!("sending error response to client: {self:?}");
+
         match self {
             Self::InputExceededError(model, max, input) => {
                 let error = OpenAIError {
