@@ -9,7 +9,7 @@ use tracing::instrument;
 use crate::errors::AiRouterError;
 use crate::state::State;
 
-#[instrument(skip(state))]
+#[instrument(level = "debug", skip(state))]
 pub async fn get(AxumState(state): AxumState<Arc<State>>) -> Response {
     let mut model_names: Vec<String> = Vec::new();
 

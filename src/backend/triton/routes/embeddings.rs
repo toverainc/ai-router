@@ -18,7 +18,7 @@ use crate::request::AiRouterRequestData;
 
 const MODEL_OUTPUT_NAME: &str = "embedding";
 
-#[instrument(skip(client, request, request_data))]
+#[instrument(level = "debug", skip(client, request, request_data))]
 pub(crate) async fn embed(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<EmbeddingParameters>,
@@ -91,7 +91,7 @@ pub(crate) async fn embed(
     }))
 }
 
-#[instrument(skip(request))]
+#[instrument(level = "debug", skip(request))]
 fn build_triton_request(request: EmbeddingParameters) -> anyhow::Result<ModelInferRequest> {
     let (batch_size, triton_input) = match request.input {
         EmbeddingInput::String(i) => {

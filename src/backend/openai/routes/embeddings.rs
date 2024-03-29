@@ -6,7 +6,7 @@ use tracing::instrument;
 use crate::errors::{transform_openai_dive_apierror, AiRouterError};
 use crate::request::AiRouterRequestData;
 
-#[instrument(skip(client, request))]
+#[instrument(level = "debug", skip(client, request))]
 pub async fn embed(
     client: Client,
     Json(request): Json<EmbeddingParameters>,
