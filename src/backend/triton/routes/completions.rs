@@ -25,6 +25,7 @@ use crate::errors::AiRouterError;
 use crate::request::{check_input_cc, AiRouterRequestData};
 use crate::utils::{deserialize_bytes_tensor, string_or_seq_string};
 
+const MAX_TOKENS: u32 = 131_072;
 const MODEL_OUTPUT_NAME: &str = "text_output";
 
 #[instrument(skip(client, request, request_data))]
@@ -241,7 +242,9 @@ fn build_triton_request(
         .input(
             "max_tokens",
             [1, 1],
-            InferTensorData::Int32(vec![i32::try_from(request.max_tokens)?]),
+            InferTensorData::Int32(vec![i32::try_from(
+                request.max_tokens.unwrap_or(MAX_TOKENS),
+            )?]),
         )
         .input(
             "bad_words",
@@ -320,8 +323,8 @@ pub struct CompletionCreateParams {
     /// Include the log probabilities on the logprobs most likely tokens, as well the chosen tokens.
     logprobs: Option<usize>,
     /// The maximum number of tokens to generate in the completion.
-    #[serde(default = "default_max_tokens")]
-    max_tokens: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    max_tokens: Option<u32>,
     /// How many completions to generate for each prompt.
     #[serde(default = "default_n")]
     n: usize,
@@ -388,10 +391,6 @@ fn default_echo() -> bool {
 
 fn default_frequency_penalty() -> f32 {
     0.0
-}
-
-fn default_max_tokens() -> usize {
-    16
 }
 
 fn default_n() -> usize {
