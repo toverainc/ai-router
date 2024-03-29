@@ -12,7 +12,7 @@ use crate::errors::AiRouterError;
 use crate::request::AiRouterRequestData;
 use crate::state::{BackendTypes, State};
 
-#[instrument(skip(state, request))]
+#[instrument(level = "debug", skip(state, request))]
 pub async fn completion(
     AxumState(state): AxumState<Arc<State>>,
     mut request: Json<CompletionCreateParams>,

@@ -32,7 +32,7 @@ impl Templater {
         Ok(Self { env })
     }
 
-    #[instrument(skip(self, input, template, template_type))]
+    #[instrument(level = "debug", skip(self, input, template, template_type))]
     pub fn apply_completions<T: serde::Serialize>(
         self,
         input: &T,

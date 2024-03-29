@@ -29,7 +29,7 @@ use crate::utils::{deserialize_bytes_tensor, string_or_seq_string};
 const MAX_TOKENS: u32 = 131_072;
 const MODEL_OUTPUT_NAME: &str = "text_output";
 
-#[instrument(skip(client, request, request_data, templater))]
+#[instrument(level = "debug", skip(client, request, request_data, templater))]
 pub async fn compat_completions(
     client: GrpcInferenceServiceClient<Channel>,
     request: Json<CompletionCreateParams>,
@@ -49,7 +49,7 @@ pub async fn compat_completions(
     }
 }
 
-#[instrument(skip(client, request, request_data, templater))]
+#[instrument(level = "debug", skip(client, request, request_data, templater))]
 async fn completions_stream(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
@@ -153,7 +153,11 @@ async fn completions_stream(
     Ok(Sse::new(response_stream).keep_alive(KeepAlive::default()))
 }
 
-#[instrument(skip(client, request, request_data, templater), err(Debug))]
+#[instrument(
+    level = "debug",
+    skip(client, request, request_data, templater),
+    err(Debug)
+)]
 async fn completions(
     mut client: GrpcInferenceServiceClient<Channel>,
     Json(request): Json<CompletionCreateParams>,
