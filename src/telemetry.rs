@@ -71,19 +71,12 @@ pub fn init_subscriber(
         None
     };
 
-    let fmt_layer = if cfg!(debug_assertions) {
-        tracing_subscriber::fmt::layer()
-            .with_file(true)
-            .with_line_number(true)
-            .with_thread_names(true)
-            .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
-            .boxed()
-    } else {
-        tracing_subscriber::fmt::layer()
-            .json()
-            .flatten_event(true)
-            .boxed()
-    };
+    let fmt_layer = tracing_subscriber::fmt::layer()
+        .with_file(true)
+        .with_line_number(true)
+        .with_thread_names(true)
+        .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
+        .boxed();
 
     tracing_subscriber::registry()
         .with(env_filter)
