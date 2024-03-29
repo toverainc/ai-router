@@ -91,10 +91,7 @@ pub(crate) async fn embed(
     }))
 }
 
-#[instrument(
-    name = "backend::triton::embeddings::build_triton_request",
-    skip(request)
-)]
+#[instrument(skip(request))]
 fn build_triton_request(request: EmbeddingParameters) -> anyhow::Result<ModelInferRequest> {
     let (batch_size, triton_input) = match request.input {
         EmbeddingInput::String(i) => {
