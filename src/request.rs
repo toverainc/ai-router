@@ -7,6 +7,7 @@ use crate::{config::AiRouterModel, errors::AiRouterError, state::State, tokenize
 #[derive(Debug)]
 pub struct AiRouterRequestData {
     pub max_input: Option<usize>,
+    pub max_tokens: Option<u32>,
     pub original_model: Option<String>,
     pub prompt_tokens: usize,
     pub tokenizer: Option<Tokenizer>,
@@ -16,6 +17,7 @@ impl AiRouterRequestData {
     pub fn new() -> Self {
         Self {
             max_input: None,
+            max_tokens: None,
             original_model: None,
             prompt_tokens: 0,
             tokenizer: None,
@@ -42,6 +44,10 @@ impl AiRouterRequestData {
                     "model parameter max_input requires hf_model_name",
                 )));
             }
+        }
+
+        if let Some(max_tokens) = model.max_tokens {
+            request_data.max_tokens = Some(max_tokens);
         }
 
         Ok(request_data)

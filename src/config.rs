@@ -160,6 +160,7 @@ pub struct AiRouterModel {
     pub default: Option<bool>,
     pub hf_model_name: Option<String>,
     pub max_input: Option<usize>,
+    pub max_tokens: Option<u32>,
     pub prompt_format: Option<String>,
 }
 

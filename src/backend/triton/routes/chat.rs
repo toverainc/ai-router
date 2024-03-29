@@ -259,7 +259,9 @@ fn build_triton_request(
             "max_tokens",
             [1, 1],
             InferTensorData::Int32(vec![i32::try_from(
-                request.max_tokens.unwrap_or(MAX_TOKENS),
+                request
+                    .max_tokens
+                    .unwrap_or(request_data.max_tokens.unwrap_or(MAX_TOKENS)),
             )?]),
         )
         .input(
