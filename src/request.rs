@@ -31,11 +31,11 @@ impl AiRouterRequestData {
     /// `AiRouterError::InternalServerError` when `max_input` is set for the model but `hf_model_name is not`
     #[instrument(
         level = "debug",
-        skip(model, _model_name_backend, model_name_request, state)
+        skip(model, model_name_backend, model_name_request, state)
     )]
     pub fn build(
         model: &AiRouterModel,
-        _model_name_backend: Option<String>,
+        model_name_backend: Option<String>,
         model_name_request: &str,
         state: &Arc<State>,
     ) -> Result<Self, AiRouterError<String>> {
@@ -59,6 +59,14 @@ impl AiRouterRequestData {
         }
 
         request_data.template.clone_from(&model.prompt_format);
+
+        if request_data.template.is_none() {
+            if let Some(backend_model) = model_name_backend {
+                request_data.template = state.models_prompt.get(&backend_model).cloned();
+            } else {
+                request_data.template = state.models_prompt.get(model_name_request).cloned();
+            }
+        }
 
         Ok(request_data)
     }
