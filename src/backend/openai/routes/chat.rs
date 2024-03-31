@@ -38,10 +38,7 @@ async fn chat_completion(
         .create(request)
         .await
         .map_err(|e| transform_openai_dive_apierror(&e))?;
-    response.model = request_data
-        .original_model
-        .clone()
-        .unwrap_or(response.model);
+    response.model = request_data.request_model.clone().unwrap_or(response.model);
     Ok(Json(response))
 }
 
@@ -57,7 +54,7 @@ async fn chat_completion_stream(
         .await
         .map_err(|e| transform_openai_dive_apierror(&e))?;
 
-    let response_model = request_data.original_model.clone().unwrap_or(request.model);
+    let response_model = request_data.request_model.clone().unwrap_or(request.model);
 
     let response_stream = try_stream! {
         while let Some(response) = stream.next().await {

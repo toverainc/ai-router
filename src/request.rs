@@ -9,8 +9,8 @@ use crate::{config::AiRouterModel, errors::AiRouterError, state::State, tokenize
 pub struct AiRouterRequestData {
     pub max_input: Option<usize>,
     pub max_tokens: Option<u32>,
-    pub original_model: Option<String>,
     pub prompt_tokens: usize,
+    pub request_model: Option<String>,
     pub template: Option<String>,
     pub tokenizer: Option<Tokenizer>,
 }
@@ -20,8 +20,8 @@ impl AiRouterRequestData {
         Self {
             max_input: None,
             max_tokens: None,
-            original_model: None,
             prompt_tokens: 0,
+            request_model: None,
             template: None,
             tokenizer: None,
         }
@@ -37,7 +37,7 @@ impl AiRouterRequestData {
     ) -> Result<Self, AiRouterError<String>> {
         let mut request_data: Self = Self::new();
 
-        request_data.original_model = Some(String::from(model_name));
+        request_data.request_model = Some(String::from(model_name));
 
         if let Some(max_input) = model.max_input {
             if let Some(hf_model_name) = model.hf_model_name.clone() {
@@ -69,7 +69,7 @@ pub fn check_input_cc(
     request_data: &mut AiRouterRequestData,
 ) -> Result<(), AiRouterError<String>> {
     let model = request_data
-        .original_model
+        .request_model
         .clone()
         .unwrap_or_else(|| String::from(model));
     if let Some(max_input) = request_data.max_input {

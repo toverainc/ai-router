@@ -64,7 +64,7 @@ async fn chat_completions_stream(
 
     let request = build_triton_request(request, request_data, templater)?;
     let model_name = request_data
-        .original_model
+        .request_model
         .clone()
         .unwrap_or(request.model_name.clone());
 
@@ -171,7 +171,7 @@ async fn chat_completions(
 ) -> Result<Json<ChatCompletionResponse>, AiRouterError<String>> {
     let request = build_triton_request(request, request_data, templater)?;
     let model_name = request_data
-        .original_model
+        .request_model
         .clone()
         .unwrap_or(request.model_name.clone());
     let request_stream = stream! { yield request };
