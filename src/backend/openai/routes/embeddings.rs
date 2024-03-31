@@ -13,7 +13,7 @@ pub async fn embed(
     request_data: &AiRouterRequestData,
 ) -> Result<Json<EmbeddingResponse>, AiRouterError<String>> {
     let response_model = request_data
-        .original_model
+        .request_model
         .clone()
         .unwrap_or_else(|| request.model.clone());
 

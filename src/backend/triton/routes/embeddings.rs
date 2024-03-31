@@ -35,7 +35,7 @@ pub(crate) async fn embed(
 
     let request = build_triton_request(request)?;
     let model_name = request_data
-        .original_model
+        .request_model
         .clone()
         .unwrap_or(request.model_name.clone());
     let request_stream = stream! { yield request };
