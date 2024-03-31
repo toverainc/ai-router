@@ -47,6 +47,7 @@ pub struct AiRouterConfigFile {
     pub backends: HashMap<String, AiRouterBackend>,
     pub daemon: AiRouterDaemon,
     pub models: AiRouterModels,
+    pub prompt_models: Option<HashMap<String, AiRouterPromptModels>>,
     pub title: String,
 }
 
@@ -213,6 +214,11 @@ pub struct AiRouterModel {
     pub max_input: Option<usize>,
     pub max_tokens: Option<u32>,
     pub prompt_format: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct AiRouterPromptModels {
+    pub models: Vec<String>,
 }
 
 #[derive(Parser, Debug, Serialize, Deserialize)]
