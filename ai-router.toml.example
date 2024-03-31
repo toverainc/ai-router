@@ -108,3 +108,12 @@ max_input = 512
 [models.embeddings.text-embedding-ada-002]
 backend = "openai"
 default = false
+
+# Prompt models
+[prompt_models]
+
+[prompt_models.mistral]
+models = [
+"Mistral-7B-Instruct-v0.2",
+"mistralai/Mistral-7B-Instruct-v0.2"
+]
