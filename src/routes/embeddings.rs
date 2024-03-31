@@ -20,7 +20,12 @@ pub async fn embed(
 ) -> Result<Response, AiRouterError<String>> {
     if let Some(models) = state.config.models.get(&AiRouterModelType::Embeddings) {
         if let Some(model) = models.get(&request.model) {
-            let request_data = AiRouterRequestData::build(model, &request.model, &state)?;
+            let request_data = AiRouterRequestData::build(
+                model,
+                model.backend_model.clone(),
+                &request.model,
+                &state,
+            )?;
             if let Some(backend_model) = model.backend_model.clone() {
                 request.model = backend_model;
             }
