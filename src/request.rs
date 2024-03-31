@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use tokenizers::Tokenizer;
+use tracing::instrument;
 
 use crate::{config::AiRouterModel, errors::AiRouterError, state::State, tokenizers::Tokenizers};
 
@@ -26,6 +27,7 @@ impl AiRouterRequestData {
 
     /// # Errors
     /// `AiRouterError::InternalServerError` when `max_input` is set for the model but `hf_model_name is not`
+    #[instrument(level = "debug", skip(model, model_name, state))]
     pub fn build(
         model: &AiRouterModel,
         model_name: &str,
