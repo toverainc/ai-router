@@ -21,6 +21,7 @@ pub enum AiRouterBackendType {
 #[serde(rename_all = "snake_case")]
 pub enum AiRouterModelType {
     AudioSpeech,
+    AudioTranscriptions,
     ChatCompletions,
     Embeddings,
 }

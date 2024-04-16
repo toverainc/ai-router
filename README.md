@@ -26,7 +26,7 @@ Point your clients at AI Router and use any combination of Triton Inference Serv
 | Inference Type               | OpenAI backend     | Triton backend     |
 | :--------------------------- | :----------------: | :----------------: |
 | Audio > Create Speech        | :white_check_mark: | :x:                |
-| Audio > Create Transcription | :x:                | :x:                |
+| Audio > Create Transcription | :white_check_mark: | :x:                |
 | Audio > Create Translation   | :x:                | :x:                |
 | Chat                         | :white_check_mark: | :white_check_mark: |
 | Embeddings                   | :white_check_mark: | :white_check_mark: |

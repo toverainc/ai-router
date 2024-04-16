@@ -69,6 +69,11 @@ max_input = 512
 
 # OpenAI tts-1 example
 [models.audio_speech."tts-1"]
+
+# Audio Transcriptions
+
+# OpenAI whisper-1 example
+[models.audio_transcriptions."whisper-1"]
 backend = "openai"
 
 # Chat completions
