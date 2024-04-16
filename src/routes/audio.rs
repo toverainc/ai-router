@@ -14,6 +14,7 @@ use openai_dive::v1::resources::audio::{
 use tracing::instrument;
 
 use crate::backend::openai::routes as openai_routes;
+use crate::backend::triton::routes as triton_routes;
 use crate::config::AiRouterModelType;
 use crate::errors::AiRouterError;
 use crate::state::{BackendTypes, State};
@@ -91,10 +92,8 @@ pub async fn transcriptions(
                 BackendTypes::OpenAI(c) => {
                     return openai_routes::audio::transcriptions(c, parameters).await
                 }
-                BackendTypes::Triton(_c) => {
-                    return Err(AiRouterError::InternalServerError::<String>(String::from(
-                        "audio transcriptions to Triton backend not implemented yet",
-                    )));
+                BackendTypes::Triton(c) => {
+                    return triton_routes::audio::transcriptions(c.clone(), parameters).await
                 }
             }
         }
