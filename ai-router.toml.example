@@ -15,6 +15,9 @@ listen_port = 3000
 #api_key = "my_simple_key"
 #api_key = ["my_key", "another_key", "yet_another_key"]
 
+# max request body size in MiB
+#max_body_size = 4
+
 # OpenTelemtry Protocol endpoint
 #otlp_endpoint = "http://my.otlp.endpoint:4317"
 

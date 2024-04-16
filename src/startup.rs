@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use axum::extract::DefaultBodyLimit;
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use axum::Router;
@@ -7,6 +8,7 @@ use axum_prometheus::PrometheusMetricLayer;
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use tokio::net::TcpListener;
 use tokio::signal::unix::{signal, SignalKind};
+use tower_http::limit::RequestBodyLimitLayer;
 
 use crate::config::AiRouterConfigFile;
 use crate::errors::AiRouterError;
@@ -40,7 +42,11 @@ pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> 
         .with_state(Arc::new(state))
         .layer(prometheus_layer)
         .layer(OtelInResponseLayer)
-        .layer(OtelAxumLayer::default());
+        .layer(OtelAxumLayer::default())
+        .layer(DefaultBodyLimit::disable())
+        .layer(RequestBodyLimitLayer::new(
+            config_file.daemon.max_body_size * 1024 * 1024,
+        ));
 
     let address = format!(
         "{}:{}",

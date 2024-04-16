@@ -151,6 +151,9 @@ pub struct AiRouterDaemon {
     pub instance_id: String,
     pub listen_ip: String,
     pub listen_port: u16,
+    /// HTTP request body limit in MiB
+    #[serde(default = "default_max_body_size")]
+    pub max_body_size: usize,
     pub otlp_endpoint: Option<String>,
 }
 
@@ -180,6 +183,10 @@ const fn default_api_key() -> Vec<String> {
 
 fn default_instance_id() -> String {
     String::from(Uuid::new_v4())
+}
+
+const fn default_max_body_size() -> usize {
+    2
 }
 
 #[cfg(test)]
