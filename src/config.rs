@@ -202,7 +202,7 @@ mod tests {
     #[test]
     fn test_ok() {
         let config: Result<AiRouterConfigFile> =
-            AiRouterConfigFile::parse(String::from("ai-router.toml.example"));
+            AiRouterConfigFile::parse(String::from("examples/config.toml"));
 
         match config {
             Ok(o) => println!(

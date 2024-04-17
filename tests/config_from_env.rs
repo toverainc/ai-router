@@ -5,7 +5,7 @@ use ai_router::config::AiRouterConfigFile;
 
 #[test]
 fn environment_overrides_file_config() {
-    let config_file = Path::new(env!("CARGO_MANIFEST_DIR")).join("ai-router.toml.example");
+    let config_file = Path::new(env!("CARGO_MANIFEST_DIR")).join("examples/config.toml");
     let output = Command::new(env!("CARGO_BIN_EXE_ai-router"))
         .arg("--config-file")
         .arg(config_file)
