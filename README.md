@@ -144,7 +144,7 @@ For example, AI Router can:
 - Wildcard match for things like different/default OpenAI model names/versions and map to any backend/model you define.
 - Much more in any number or combination of these across any backend, model name, or currently supported function (embeddings or chat).
 
-Check the [example configuration file in this repo](airouter.toml.example) to get an idea.
+Check the [example configuration file in this repo](examples/config.toml) to get an idea.
 
 ## Performance
 Written in pure Rust we have done performance testing showing AI Router competitive with (far more limited) nginx for request rate and latency. AI Router will not be the limiting factor in terms of request rate and contributes minimally to latency for the all-important TTFT (time to first token).
