@@ -1,0 +1,26 @@
+{%- set bos_token = '<s>' -%}
+{% set eos_token = '</s>' -%}
+{% set mod = 0 -%}
+{% set system = '' -%}
+{{ bos_token -}}
+{%- for message in messages -%}
+{% if (message['role'] == 'system' and loop.index0 == 0) -%}
+{% set mod = 1 -%}
+{% set system = message['content'] %}
+{% else -%}
+{% if (message['role'] == 'user') != (loop.index0 % 2 == mod) -%}
+{{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/... ' ~ loop.index0 + ' ' ~ mod ) }}
+{% endif -%}
+{% if message['role'] == 'user' -%}
+{% if system and system | length > 0 and loop.index0 == 1 -%}
+{{ '[INST] ' + system + '\n' + message['content'] + ' [/INST]' -}}
+{% else -%}
+{{ '[INST] ' + message['content'] + ' [/INST]' -}}
+{% endif -%}
+{% elif message ['role'] == 'assistant' -%}
+{{ ' ' + message['content'] + eos_token -}}
+{% else -%}
+{{ raise_exception('Only user and assistant roles are supported!') }}
+{% endif -%}
+{% endif -%}
+{% endfor -%}
