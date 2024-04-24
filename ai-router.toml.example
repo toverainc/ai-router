@@ -65,6 +65,12 @@ max_input = 512
 
 [models]
 
+# Audio Speech
+
+# OpenAI tts-1 example
+[models.audio_speech."tts-1"]
+backend = "openai"
+
 # Chat completions
 
 # Mistral example

@@ -24,6 +24,7 @@ pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> 
     let state = State::new(config_file).await;
 
     let app = Router::new()
+        .route("/v1/audio/speech", post(routes::audio::speech))
         .route("/v1/chat/completions", post(routes::chat::completion))
         .route("/v1/completions", post(routes::completions::completion))
         .route("/v1/embeddings", post(routes::embeddings::embed))
