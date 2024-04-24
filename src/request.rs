@@ -33,7 +33,7 @@ impl AiRouterRequestData {
         model_name: &str,
         state: &Arc<State>,
     ) -> Result<Self, AiRouterError<String>> {
-        let mut request_data: AiRouterRequestData = Self::new();
+        let mut request_data: Self = Self::new();
 
         request_data.original_model = Some(String::from(model_name));
 
