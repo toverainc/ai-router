@@ -33,7 +33,7 @@ opentelemetry-otlp = "0.15.0"
 opentelemetry_sdk = { version = "0.22.1", features = ["rt-tokio", "metrics"] }
 prost = "0.12.4"
 prost-types = "0.12.4"
-reqwest = { version = "0.12.3", default-features = false, features = ["rustls-tls-native-roots"] }
+reqwest = { version = "0.12.4", default-features = false, features = ["rustls-tls-native-roots"] }
 serde = { version = "1.0.198", features = ["derive"] }
 serde_json = "1.0.116"
 serde_with = "3.7.0"
