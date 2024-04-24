@@ -22,7 +22,7 @@ impl State {
         let backends = Backend::init(config_file).await;
         let tokenizers = Tokenizers::new(&config_file.models);
 
-        State {
+        Self {
             backends,
             config: config_file.clone(),
             tokenizers,
