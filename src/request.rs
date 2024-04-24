@@ -67,7 +67,7 @@ pub fn check_input_cc(
     let model = request_data
         .original_model
         .clone()
-        .unwrap_or(String::from(model));
+        .unwrap_or_else(|| String::from(model));
     if let Some(max_input) = request_data.max_input {
         if let Some(tokenizer) = &request_data.tokenizer {
             if let Ok(encoded) = tokenizer.encode(input, false) {
