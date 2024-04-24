@@ -82,8 +82,6 @@ mod tests {
             AiRouterConfigFile::parse(String::from("tests/ai-router.toml.default_backend"))
                 .expect("failed to load test config file");
 
-        let backends = Backend::init(&config_file).await;
-
-        assert!(backends.contains_key("default"));
+        assert!(Backend::init(&config_file).await.contains_key("default"));
     }
 }
