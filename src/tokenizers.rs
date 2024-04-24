@@ -29,7 +29,7 @@ impl Tokenizers {
             }
         }
 
-        Tokenizers(tokenizers)
+        Self(tokenizers)
     }
 
     pub fn get(tokenizers: &Self, name: &str) -> Option<Tokenizer> {
