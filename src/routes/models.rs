@@ -13,7 +13,8 @@ use crate::state::State;
 pub async fn get(AxumState(state): AxumState<Arc<State>>) -> Response {
     let mut model_names: Vec<String> = Vec::new();
 
-    for model_type in state.config.models.keys() {
+    let model_types = state.config.models.keys();
+    for model_type in model_types {
         let Some(models) = state.config.models.get(model_type) else {
             return AiRouterError::InternalServerError::<String>(format!(
                 "failed to get models of type {model_type:?}"
