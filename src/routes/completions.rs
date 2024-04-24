@@ -30,10 +30,7 @@ pub async fn completion(
                 request.model = backend_model;
             }
 
-            let model_backend = match &model.backend {
-                Some(m) => m,
-                None => "default",
-            };
+            let model_backend = model.backend.as_ref().map_or("default", |m| m);
 
             let Some(backend) = state.backends.get(model_backend) else {
                 tracing::warn!("backend: {:#?}", state.backends);
