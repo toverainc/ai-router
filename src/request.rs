@@ -15,7 +15,7 @@ pub struct AiRouterRequestData {
 }
 
 impl AiRouterRequestData {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             max_input: None,
             max_tokens: None,
