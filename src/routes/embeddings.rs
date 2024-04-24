@@ -17,15 +17,10 @@ use crate::state::{BackendTypes, State};
 pub async fn embed(
     AxumState(state): AxumState<Arc<State>>,
     mut request: Json<EmbeddingParameters>,
-) -> Response {
+) -> Result<Response, AiRouterError<String>> {
     if let Some(models) = state.config.models.get(&AiRouterModelType::Embeddings) {
         if let Some(model) = models.get(&request.model) {
-            let request_data = match AiRouterRequestData::build(model, &request.model, &state) {
-                Ok(d) => d,
-                Err(e) => {
-                    return e.into_response();
-                }
-            };
+            let request_data = AiRouterRequestData::build(model, &request.model, &state)?;
             if let Some(backend_model) = model.backend_model.clone() {
                 request.model = backend_model;
             }
@@ -33,26 +28,31 @@ pub async fn embed(
             let model_backend = model.backend.as_ref().map_or("default", |m| m);
 
             let Some(backend) = state.backends.get(model_backend) else {
-                return AiRouterError::InternalServerError::<String>(format!(
+                return Err(AiRouterError::InternalServerError::<String>(format!(
                     "backend {model_backend} not found"
-                ))
-                .into_response();
+                )));
             };
 
             match &backend.client {
                 BackendTypes::OpenAI(c) => {
-                    return openai_routes::embeddings::embed(c.clone(), request, &request_data)
-                        .await
-                        .into_response();
+                    return Ok(
+                        openai_routes::embeddings::embed(c.clone(), request, &request_data)
+                            .await
+                            .into_response(),
+                    );
                 }
                 BackendTypes::Triton(c) => {
-                    return triton_routes::embeddings::embed(c.clone(), request, &request_data)
-                        .await
-                        .into_response();
+                    return Ok(
+                        triton_routes::embeddings::embed(c.clone(), request, &request_data)
+                            .await
+                            .into_response(),
+                    );
                 }
             }
         }
     }
 
-    return AiRouterError::ModelNotFound::<String>(request.model.clone()).into_response();
+    Err(AiRouterError::ModelNotFound::<String>(
+        request.model.clone(),
+    ))
 }
