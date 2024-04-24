@@ -15,7 +15,7 @@ pub async fn embed(
     let response_model = request_data
         .original_model
         .clone()
-        .unwrap_or(request.model.clone());
+        .unwrap_or_else(|| request.model.clone());
 
     let mut response = client
         .embeddings()
