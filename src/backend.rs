@@ -55,14 +55,14 @@ impl Backend {
         Self { client }
     }
 
-    pub async fn init(config: &AiRouterConfigFile) -> HashMap<String, Backend> {
+    pub async fn init(config: &AiRouterConfigFile) -> HashMap<String, Self> {
         let mut map: Backends = HashMap::new();
 
         for (name, backend) in &config.backends {
-            map.insert(name.clone(), Backend::new(name, backend).await);
+            map.insert(name.clone(), Self::new(name, backend).await);
 
             if backend.default.unwrap_or(false) {
-                map.insert(String::from("default"), Backend::new(name, backend).await);
+                map.insert(String::from("default"), Self::new(name, backend).await);
             }
         }
 
