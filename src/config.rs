@@ -173,7 +173,7 @@ pub struct AiRouterArguments {
     pub dump_config: bool,
 }
 
-fn default_api_key() -> Vec<String> {
+const fn default_api_key() -> Vec<String> {
     Vec::new()
 }
 
