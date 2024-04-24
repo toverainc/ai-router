@@ -31,6 +31,6 @@ jobs:
       - name: Check code format with rustfmt
         uses: actions-rust-lang/rustfmt@v1
       - name: Run cargo clippy
-        run: cargo clippy --all-features --all-targets --no-deps -- -Dclippy::pedantic
+        run: cargo clippy --all-features --all-targets --no-deps -- -Dclippy::nursery -Dclippy::pedantic
       - name: Run Rust tests
         run: cargo test
