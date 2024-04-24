@@ -27,10 +27,7 @@ fn init_tracer(
             sdktrace::config()
                 .with_resource(Resource::new(vec![
                     KeyValue::new("service.name", name.to_owned()),
-                    KeyValue::new(
-                        "service.instance.id",
-                        airouter_daemon_config.instance_id.clone(),
-                    ),
+                    KeyValue::new("service.instance.id", airouter_daemon_config.instance_id),
                 ]))
                 .with_sampler(sdktrace::Sampler::AlwaysOn),
         )
