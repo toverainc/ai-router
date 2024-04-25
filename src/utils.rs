@@ -1,10 +1,12 @@
-use std::fmt;
 use std::marker::PhantomData;
 use std::str;
 use std::str::Utf8Error;
+use std::{fmt, path::Path};
 
 use bytes::{Buf, Bytes};
 use serde::{de, Deserialize, Deserializer};
+
+use crate::errors::AiRouterError;
 
 pub fn string_or_seq_string<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
 where
@@ -49,6 +51,18 @@ pub fn deserialize_bytes_tensor(encoded_tensor: Vec<u8>) -> Result<Vec<String>, 
         }
     }
     Ok(strs)
+}
+
+pub fn get_file_extension(filename: &str) -> Result<&str, AiRouterError<String>> {
+    Path::new(filename)
+        .extension()
+        .ok_or(AiRouterError::InternalServerError::<String>(String::from(
+            "failed to get extension of uploaded file",
+        )))?
+        .to_str()
+        .ok_or(AiRouterError::InternalServerError::<String>(String::from(
+            "failed to convert extension to str",
+        )))
 }
 
 #[cfg(test)]

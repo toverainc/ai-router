@@ -1,5 +1,4 @@
 use std::io::Read;
-use std::path::Path;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -18,6 +17,7 @@ use crate::backend::openai::routes as openai_routes;
 use crate::config::AiRouterModelType;
 use crate::errors::AiRouterError;
 use crate::state::{BackendTypes, State};
+use crate::utils::get_file_extension;
 
 pub async fn speech(
     AxumState(state): AxumState<Arc<State>>,
@@ -186,15 +186,7 @@ fn is_audio_format_supported(filename: &str) -> Result<(), AiRouterError<String>
         "flac", "m4a", "mp3", "mp4", "mpeg", "mpga", "ogg", "ogm", "wav", "webm",
     ];
 
-    let extension = Path::new(filename)
-        .extension()
-        .ok_or(AiRouterError::InternalServerError::<String>(String::from(
-            "failed to get extension of uploaded file",
-        )))?
-        .to_str()
-        .ok_or(AiRouterError::InternalServerError::<String>(String::from(
-            "failed to convert extension to str",
-        )))?;
+    let extension = get_file_extension(filename)?;
 
     tracing::debug!("filename: {filename} - extension: {extension}");
 
