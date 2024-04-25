@@ -1,4 +1,7 @@
+from sys import exit
+
 from openai import OpenAI
+from openai._exceptions import OpenAIError
 import argparse
 import time
 
@@ -80,15 +83,20 @@ client = OpenAI(
 input = f'[INST] {FLAGS.input} [/INST]'
 
 start_time = time.time()
-chat_completion = client.chat.completions.create(
-    messages=[{
-        "role": "user",
-        "content": input
-    }],
-    model=FLAGS.model,
-    max_tokens=FLAGS.tokens,
-    stream=FLAGS.stream
-)
+
+try:
+    chat_completion = client.chat.completions.create(
+        messages=[{
+            "role": "user",
+            "content": input
+        }],
+        model=FLAGS.model,
+        max_tokens=FLAGS.tokens,
+        stream=FLAGS.stream
+    )
+except OpenAIError as e:
+    print(f"chat completion error: {type(e).__name__}: {e}")
+    exit(1)
 
 output_start_time = None
 tokens = 0
