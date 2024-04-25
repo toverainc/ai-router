@@ -33,7 +33,7 @@ pub async fn speech(
                     return openai_routes::audio::speech(c, parameters).await;
                 }
                 BackendTypes::Triton(_c) => {
-                    return Err(AiRouterError::InternalServerError::<String>(String::from(
+                    return Err(AiRouterError::BadRequestError::<String>(String::from(
                         "create speech to Triton backend not implemented yet",
                     )));
                 }
