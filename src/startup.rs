@@ -6,6 +6,7 @@ use axum::Router;
 use axum_prometheus::PrometheusMetricLayer;
 use axum_tracing_opentelemetry::middleware::{OtelAxumLayer, OtelInResponseLayer};
 use tokio::net::TcpListener;
+use tokio::signal::unix::{signal, SignalKind};
 
 use crate::config::AiRouterConfigFile;
 use crate::errors::AiRouterError;
@@ -59,9 +60,20 @@ async fn fallback<T: std::fmt::Debug + std::marker::Send>(
 }
 
 async fn shutdown_signal() {
-    tokio::signal::ctrl_c()
-        .await
-        .expect("failed to install CTRL+C signal handler");
+    let sig_ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install CTRL+C signal handler");
+    };
+
+    let sig_term = async {
+        signal(SignalKind::terminate())
+            .expect("failed to install SIGTERM signal handler")
+            .recv()
+            .await;
+    };
+
+    tokio::select! {() = sig_ctrl_c => {}, () = sig_term => {}}
 
     if let Err(e) =
         tokio::task::spawn_blocking(opentelemetry::global::shutdown_tracer_provider).await
