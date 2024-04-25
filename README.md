@@ -2,9 +2,11 @@
 
 AI Router presents an OpenAI API compatible HTTP interface to clients. AI Router can then take input from OpenAI API clients and route requests to any number of backends and models with translation across protocol, model naming, and prompt formatting. Currently supports OpenAI API compatible backends or [NVIDIA Triton Inference Server](https://github.com/triton-inference-server/server) via gRPC.
 
-It could be thought of as an API Gateway for AI and/or a free and open source [Nividia Inference Microservice](https://developer.nvidia.com/blog/nvidia-nim-offers-optimized-inference-microservices-for-deploying-ai-models-at-scale/).
+Written in 100% pure Rust.
 
-Point your clients at AI Router and use any combination of OpenAI, Triton Inference Server, vLLM, etc hosted models and AI Router will handle the rest.
+AI Router could be thought of as an API Gateway for AI and/or a free and open source [Nividia Inference Microservice](https://developer.nvidia.com/blog/nvidia-nim-offers-optimized-inference-microservices-for-deploying-ai-models-at-scale/). Or a SBC (Session Border Controller) if you're a friend from the VoIP days.
+
+Point your clients at AI Router and use any combination of Triton Inference Server, vLLM, OpenAI, Mistral, llama.cpp, etc hosted models and AI Router will handle the rest.
 
 ## Feature Support
 
