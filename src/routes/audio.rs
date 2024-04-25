@@ -132,17 +132,7 @@ pub async fn build_transcription_parameters(
             let filename: String =
                 String::from(field.file_name().context("failed to read field filename")?);
 
-            let extension = Path::new(&filename)
-                .extension()
-                .context("failed to get extension of uploaded file")?;
-
-            tracing::debug!("filename: {filename} - extension: {extension:?}");
-
-            if extension != "wav" {
-                return Err(AiRouterError::InternalServerError::<String>(format!(
-                    "extension {extension:?} not supported",
-                )));
-            }
+            is_audio_format_supported(&filename)?;
 
             let field_data_vec = get_field_data_vec(&field.bytes().await?, &field_name)?;
             let bytes = AudioTranscriptionBytes {
@@ -189,6 +179,22 @@ pub async fn build_transcription_parameters(
     }
 
     Ok(parameters)
+}
+
+fn is_audio_format_supported(filename: &str) -> Result<(), AiRouterError<String>> {
+    let extension = Path::new(filename)
+        .extension()
+        .context("failed to get extension of uploaded file")?;
+
+    tracing::debug!("filename: {filename} - extension: {extension:?}");
+
+    if extension != "wav" {
+        return Err(AiRouterError::InternalServerError::<String>(format!(
+            "extension {extension:?} not supported",
+        )));
+    }
+
+    Ok(())
 }
 
 fn get_field_data_vec(data: &Bytes, name: &str) -> Result<Vec<u8>, AiRouterError<String>> {
