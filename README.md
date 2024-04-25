@@ -21,6 +21,18 @@ Point your clients at AI Router and use any combination of Triton Inference Serv
 - Support mix of client stream request/stream to backend.
 - More to come!
 
+### Supported Inference Types vs Backend Types
+
+| Inference Type        | OpenAI backend     | Triton backend     |
+| :-------------------- | :----------------: | :----------------: |
+| Audio > Speech        | :white_check_mark: | :x:                |
+| Audio > Transcription | :x:                | :x:                |
+| Audio > Translation   | :x:                | :x:                |
+| Chat                  | :white_check_mark: | :white_check_mark: |
+| Embeddings            | :white_check_mark: | :white_check_mark: |
+| Images                | :x:                | :x:                |
+| Legacy Completions    | :x:                | :white_check_mark: |
+
 ## Usage Example
 
 You have Triton Inference Server, vLLM, HF TEI/TGI, or any other OpenAI compatible local embeddings/LLM model(s) served. You may also have API keys for OpenAI, Mistral Le Platforme, Anyscale, etc. Or all of the above, or not.
