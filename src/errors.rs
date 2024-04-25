@@ -9,6 +9,7 @@ use serde_with::{serde_as, DefaultOnError};
 
 #[derive(Debug)]
 pub enum AiRouterError<T> {
+    BadRequestError(String),
     InputExceededError(String, usize, usize),
     InternalServerError(String),
     ModelNotFound(String),
@@ -33,16 +34,19 @@ where
         tracing::error!("sending error response to client: {self:?}");
 
         match self {
-            Self::InputExceededError(model, max, input) => {
+            Self::BadRequestError(message) => {
                 let error = OpenAIError {
                     error: OpenAIErrorData {
                         code: None,
-                        message: format!("Maximum input length for model {model} is {max} tokens, however your input is {input} tokens. Please reduce your input."),
+                        message,
                         param: None,
                         r#type: OpenAIErrorType::InvalidRequestError,
                     },
                 };
                 (StatusCode::BAD_REQUEST, Json(error)).into_response()
+            }
+            Self::InputExceededError(model, max, input) => {
+                Self::BadRequestError(format!("Maximum input length for model {model} is {max} tokens, however your input is {input} tokens. Please reduce your input.")).into_response()
             }
             Self::InternalServerError(msg) => {
                 let error = OpenAIError {
