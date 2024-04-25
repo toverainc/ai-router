@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::extract::State as AxumState;
-use axum::response::{IntoResponse, Response};
+use axum::response::Response;
 use axum::Json;
 use tracing::instrument;
 
@@ -36,7 +36,9 @@ pub async fn completion(
 
             match &backend.client {
                 BackendTypes::OpenAI(_) => {
-                    return Ok("legacy completions not supported in OpenAI backend".into_response());
+                    return Err(AiRouterError::BadRequestError(String::from(
+                        "legacy completions to OpenAI backend not implemented yet",
+                    )));
                 }
                 BackendTypes::Triton(c) => {
                     return Ok(triton_routes::completions::compat_completions(
