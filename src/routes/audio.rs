@@ -182,15 +182,23 @@ pub async fn build_transcription_parameters(
 }
 
 fn is_audio_format_supported(filename: &str) -> Result<(), AiRouterError<String>> {
+    const SUPPORTED_EXTENSIONS: [&str; 10] = [
+        "flac", "m4a", "mp3", "mp4", "mpeg", "mpga", "ogg", "ogm", "wav", "webm",
+    ];
+
     let extension = Path::new(filename)
         .extension()
         .ok_or(AiRouterError::InternalServerError::<String>(String::from(
             "failed to get extension of uploaded file",
+        )))?
+        .to_str()
+        .ok_or(AiRouterError::InternalServerError::<String>(String::from(
+            "failed to convert extension to str",
         )))?;
 
-    tracing::debug!("filename: {filename} - extension: {extension:?}");
+    tracing::debug!("filename: {filename} - extension: {extension}");
 
-    if extension != "wav" {
+    if !SUPPORTED_EXTENSIONS.contains(&extension) {
         return Err(AiRouterError::InternalServerError::<String>(format!(
             "extension {extension:?} not supported",
         )));
