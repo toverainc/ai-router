@@ -19,6 +19,7 @@ Point your clients at AI Router and use any combination of Triton Inference Serv
 - Low system resource utilization (Rust FTW).
 - Streaming support with fixups for Triton Inference Server (required ATM).
 - Support mix of client stream request/stream to backend.
+- Input token counting and limiting without a round-trip to backend.
 - More to come!
 
 ### Supported Inference Types vs Backend Types
@@ -32,6 +33,44 @@ Point your clients at AI Router and use any combination of Triton Inference Serv
 | Embeddings            | :white_check_mark: | :white_check_mark: |
 | Images                | :x:                | :x:                |
 | Legacy Completions    | :x:                | :white_check_mark: |
+
+### Input Token Counting and Limiting
+
+AI Router can count input tokens and deny the request based on a limit defined for the model in the config file. For this feature, AI Router uses the [Tokenizers crate](https://crates.io/crates/tokenizers).
+
+To enable an input token limit for a model, both the `hf_model_name` and `max_input` keys have to be set in the model config. The Tokenizers crate will try to automatically download the tokenizer config from the Hugging Face Hub. For gated models, this requires an Access Token, which can be created [here](https://huggingface.co/settings/tokens). It might also require you to share your contact information with the owners of the model and/or to accept the license agreement for the model. To make the token available for AI Router, it must be placed in the home directory of the user running AI Router at `.cache/huggingface/token`. This can be done using the `huggingface-cli` tool:
+
+```
+❯ huggingface-cli login
+
+    _|    _|  _|    _|    _|_|_|    _|_|_|  _|_|_|  _|      _|    _|_|_|      _|_|_|_|    _|_|      _|_|_|  _|_|_|_|
+    _|    _|  _|    _|  _|        _|          _|    _|_|    _|  _|            _|        _|    _|  _|        _|
+    _|_|_|_|  _|    _|  _|  _|_|  _|  _|_|    _|    _|  _|  _|  _|  _|_|      _|_|_|    _|_|_|_|  _|        _|_|_|
+    _|    _|  _|    _|  _|    _|  _|    _|    _|    _|    _|_|  _|    _|      _|        _|    _|  _|        _|
+    _|    _|    _|_|      _|_|_|    _|_|_|  _|_|_|  _|      _|    _|_|_|      _|        _|    _|    _|_|_|  _|_|_|_|
+
+    To login, `huggingface_hub` requires a token generated from https://huggingface.co/settings/tokens .
+Enter your token (input will not be visible):
+Add token as git credential? (Y/n) n
+Token is valid (permission: read).
+Your token has been saved to /home/stijn/.cache/huggingface/token
+Login successful
+```
+
+If you are running AI Router containerized, the file will have to be made available to the container.
+
+#### Example Model Config with Input Token Limiting
+
+```
+[models.chat_completions."Mistral-7B-Instruct-v0.2"]
+hf_model_name = "mistralai/Mistral-7B-Instruct-v0.2"
+max_input = 4
+```
+
+```
+❯ python client/openai_chatcompletion_client.py --input "Hello!"
+chat completion error: BadRequestError: Error code: 400 - {'error': {'code': None, 'message': 'Maximum input length for model Mistral-7B-Instruct-v0.2 is 4 tokens, however your input is 16 tokens. Please reduce your input.', 'param': None, 'type': 'invalid_request_error'}}
+```
 
 ## Usage Example
 
