@@ -184,7 +184,9 @@ pub async fn build_transcription_parameters(
 fn is_audio_format_supported(filename: &str) -> Result<(), AiRouterError<String>> {
     let extension = Path::new(filename)
         .extension()
-        .context("failed to get extension of uploaded file")?;
+        .ok_or(AiRouterError::InternalServerError::<String>(String::from(
+            "failed to get extension of uploaded file",
+        )))?;
 
     tracing::debug!("filename: {filename} - extension: {extension:?}");
 
