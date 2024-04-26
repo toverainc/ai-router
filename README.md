@@ -23,15 +23,15 @@ Point your clients at AI Router and use any combination of Triton Inference Serv
 
 ### Supported Inference Types vs Backend Types
 
-| Inference Type        | OpenAI backend     | Triton backend     |
-| :-------------------- | :----------------: | :----------------: |
-| Audio > Speech        | :white_check_mark: | :x:                |
-| Audio > Transcription | :x:                | :x:                |
-| Audio > Translation   | :x:                | :x:                |
-| Chat                  | :white_check_mark: | :white_check_mark: |
-| Embeddings            | :white_check_mark: | :white_check_mark: |
-| Images                | :x:                | :x:                |
-| Legacy Completions    | :x:                | :white_check_mark: |
+| Inference Type               | OpenAI backend     | Triton backend     |
+| :--------------------------- | :----------------: | :----------------: |
+| Audio > Create Speech        | :white_check_mark: | :x:                |
+| Audio > Create Transcription | :x:                | :x:                |
+| Audio > Create Translation   | :x:                | :x:                |
+| Chat                         | :white_check_mark: | :white_check_mark: |
+| Embeddings                   | :white_check_mark: | :white_check_mark: |
+| Images                       | :x:                | :x:                |
+| Legacy Completions           | :x:                | :white_check_mark: |
 
 ## Usage Example
 
