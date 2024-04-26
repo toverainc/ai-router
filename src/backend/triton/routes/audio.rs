@@ -24,6 +24,8 @@ use crate::{
         ModelInferRequest,
     },
     errors::AiRouterError,
+    request::AiRouterRequestData,
+    templater::Templater,
 };
 
 const MODEL_OUTPUT_NAME: &str = "TRANSCRIPTS";
@@ -37,12 +39,14 @@ struct AudioTranscriptionResponse {
 pub(crate) async fn transcriptions(
     mut client: GrpcInferenceServiceClient<Channel>,
     parameters: AudioTranscriptionParameters,
+    request_data: AiRouterRequestData,
+    templater: Templater,
 ) -> Result<Response, AiRouterError<String>> {
     // this results in the audio bytes being written to the OLTP endpoint
     // tracing::debug!("triton audio transcriptions request: {:?}", parameters);
     let response_format = parameters.response_format.clone();
 
-    let request = build_triton_request(parameters)?;
+    let request = build_triton_request(parameters, request_data, templater)?;
     let request_stream = stream! { yield request };
     let mut stream = client
         .model_stream_infer(tonic::Request::new(request_stream))
@@ -166,6 +170,8 @@ fn get_audio_samples(cursor: Cursor<Bytes>) -> Result<(i64, Vec<f32>), AiRouterE
 #[instrument(level = "debug", skip(request))]
 fn build_triton_request(
     request: AudioTranscriptionParameters,
+    request_data: AiRouterRequestData,
+    templater: Templater,
 ) -> Result<ModelInferRequest, AiRouterError<String>> {
     let audio = match request.file {
         AudioTranscriptionFile::Bytes(b) => {
@@ -184,6 +190,8 @@ fn build_triton_request(
         }
     };
 
+    let text_prefix = templater.apply_transcription(request.language, request_data.template)?;
+
     let (num_samples, audio) = get_audio_samples(audio)?;
 
     let builder = Builder::new()
@@ -191,11 +199,7 @@ fn build_triton_request(
         .input(
             "TEXT_PREFIX",
             [1, 1],
-            InferTensorData::Bytes(vec![
-                "<|startoftranscript|><|en|><|transcribe|><|notimestamps|>"
-                    .as_bytes()
-                    .to_vec(),
-            ]),
+            InferTensorData::Bytes(vec![text_prefix.as_bytes().to_vec()]),
         )
         .input("WAV", [1, num_samples], InferTensorData::FP32(audio))
         .output(MODEL_OUTPUT_NAME);
