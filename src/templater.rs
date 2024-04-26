@@ -73,6 +73,41 @@ impl Templater {
 
         Ok(rendered)
     }
+
+    pub fn apply_transcription(
+        self,
+        language: Option<String>,
+        template: Option<String>,
+    ) -> Result<String, AiRouterError<String>> {
+        let mut rendered = String::new();
+
+        if template.is_none() {
+            return Ok(rendered);
+        }
+
+        if let Some(template) = template {
+            let template = format!("transcription/{template}.j2");
+            let tpl = self.env.get_template(&template).map_err(|e| {
+                AiRouterError::InternalServerError(format!(
+                    "failed to load transcription template {template}: {e}",
+                ))
+            })?;
+
+            let language = language.unwrap_or_else(|| String::from("en"));
+
+            let ctx = context! {language => language};
+
+            rendered = tpl.render(ctx).map_err(|e| {
+                AiRouterError::InternalServerError(format!(
+                    "failed to render transcription template: {e}"
+                ))
+            })?;
+        }
+
+        tracing::debug!("prefix after applying transcription template: {rendered}");
+
+        Ok(rendered)
+    }
 }
 
 fn raise_exception(_state: &State, msg: String) -> Result<String, Error> {

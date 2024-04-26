@@ -17,6 +17,7 @@ use crate::backend::openai::routes as openai_routes;
 use crate::backend::triton::routes as triton_routes;
 use crate::config::AiRouterModelType;
 use crate::errors::AiRouterError;
+use crate::request::AiRouterRequestData;
 use crate::state::{BackendTypes, State};
 use crate::utils::get_file_extension;
 
@@ -93,7 +94,20 @@ pub async fn transcriptions(
                     return openai_routes::audio::transcriptions(c, parameters).await
                 }
                 BackendTypes::Triton(c) => {
-                    return triton_routes::audio::transcriptions(c.clone(), parameters).await
+                    let request_data = AiRouterRequestData::build(
+                        model,
+                        model.backend_model.clone(),
+                        &parameters.model,
+                        &state,
+                    )?;
+
+                    return triton_routes::audio::transcriptions(
+                        c.clone(),
+                        parameters,
+                        request_data,
+                        state.templater.clone(),
+                    )
+                    .await;
                 }
             }
         }
