@@ -213,7 +213,7 @@ async fn chat_completions(
         model: model_name,
         system_fingerprint: None,
         choices: vec![ChatCompletionChoice {
-            index: Some(0),
+            index: 0,
             message: ChatMessage {
                 name: None,
                 role: Role::Assistant,

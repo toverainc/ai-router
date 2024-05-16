@@ -35,6 +35,7 @@ impl Backend {
                     base_url: backend.base_url.clone(),
                     http_client: reqwest::Client::new(),
                     organization: None,
+                    project: None,
                 })
             }
             AiRouterBackendType::Triton => {

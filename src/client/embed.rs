@@ -38,6 +38,7 @@ async fn main() {
         base_url: args.url,
         http_client: reqwest::Client::new(),
         organization: None,
+        project: None,
     };
 
     let request = EmbeddingParameters {
