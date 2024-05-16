@@ -64,7 +64,7 @@ async fn chat_completion_stream(
             match response {
                 Ok(mut response) => {
                     tracing::debug!("{response:?}");
-                    response.model = response_model.clone();
+                    response.model.clone_from(&response_model);
                     yield Event::default().json_data(response)?;
                 }
                 Err(e) => tracing::error!("{e}"),

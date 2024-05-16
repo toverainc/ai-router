@@ -111,7 +111,7 @@ async fn completions_stream(
                 if content_new.is_empty() {
                     continue;
                 }
-                content_prev = content.clone();
+                content_prev.clone_from(&content);
                 let response = Completion {
                     id: id.clone(),
                     object: "text_completion".to_string(),

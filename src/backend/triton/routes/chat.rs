@@ -114,7 +114,7 @@ async fn chat_completions_stream(
                 if content_new.is_empty() {
                     continue;
                 }
-                content_prev = content.clone();
+                content_prev.clone_from(&content);
                 let response = ChatCompletionChunkResponse {
                     id: id.clone(),
                     object: String::from("chat.completion.chunk"),
