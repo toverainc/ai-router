@@ -38,7 +38,7 @@ parser.add_argument(
     "-m",
     "--model",
     type=str,
-    default="Mistral-7B-Instruct-v0.2",
+    default="Meta-Llama-3-8B-Instruct",
     required=False,
     help="Model name",
 )
