@@ -238,7 +238,7 @@ async fn chat_completions(
         // Not fully supported yet, need Triton to return usage stats
         // but populate prompt_tokens and total_tokens for models configured with max_tokens
         usage: Some(Usage {
-            prompt_tokens,
+            prompt_tokens: Some(prompt_tokens),
             completion_tokens: Some(0),
             // add completion_tokens once we can get them from Triton
             total_tokens: prompt_tokens,

@@ -84,7 +84,7 @@ pub(crate) async fn embed(
         // Not supported yet, need triton to return usage stats
         // but add a fake one to make `openai_dive` `EmbeddingResponse` happy
         usage: Some(Usage {
-            prompt_tokens: 0,
+            prompt_tokens: Some(0),
             completion_tokens: Some(0),
             total_tokens: 0,
             prompt_tokens_details: None,
