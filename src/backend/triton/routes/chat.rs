@@ -119,7 +119,7 @@ async fn chat_completions_stream(
                 }
                 content_prev.clone_from(&content);
                 let response = ChatCompletionChunkResponse {
-                    id: id.clone(),
+                    id: Some(id.clone()),
                     object: String::from("chat.completion.chunk"),
                     created,
                     model: model_name.clone(),
@@ -142,7 +142,7 @@ async fn chat_completions_stream(
             }
         }
         let response = ChatCompletionChunkResponse {
-            id,
+            id: Some(id),
             object: String::from("chat.completion.chunk"),
             created,
             model: model_name,
@@ -224,7 +224,7 @@ async fn chat_completions(
     let prompt_tokens = request_data.prompt_tokens.try_into().unwrap_or(0);
 
     Ok(Json(ChatCompletionResponse {
-        id: format!("cmpl-{}", Uuid::new_v4()),
+        id: Some(format!("cmpl-{}", Uuid::new_v4())),
         object: String::from("chat.completion"),
         created: u32::try_from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())?,
         model: model_name,
