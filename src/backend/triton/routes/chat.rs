@@ -10,7 +10,7 @@ use axum::Json;
 use openai_dive::v1::resources::chat::{
     ChatCompletionChoice, ChatCompletionChunkChoice, ChatCompletionChunkResponse,
     ChatCompletionParameters, ChatCompletionResponse, ChatMessage, ChatMessageContent,
-    DeltaChatMessage, Role,
+    DeltaChatMessage,
 };
 use openai_dive::v1::resources::shared::{FinishReason, StopToken, Usage};
 use serde_json::json;
@@ -123,9 +123,10 @@ async fn chat_completions_stream(
                     system_fingerprint: None,
                     choices: vec![ChatCompletionChunkChoice {
                         index: Some(0),
-                        delta: DeltaChatMessage {
-                            role: Some(Role::Assistant),
-                            content: Some(content_new),
+                        delta: DeltaChatMessage::Assistant {
+                            content: Some(ChatMessageContent::Text(content_new)),
+                            refusal: None,
+                            name: None,
                             tool_calls: None,
                         },
                         finish_reason: None,
@@ -142,10 +143,12 @@ async fn chat_completions_stream(
             system_fingerprint: None,
             choices: vec![ChatCompletionChunkChoice {
                 index: Some(0),
-                delta: DeltaChatMessage {
-                    role: None,
+                delta: DeltaChatMessage::Untagged {
                     content: None,
+                    refusal: None,
+                    name: None,
                     tool_calls: None,
+                    tool_call_id: None,
                 },
                 finish_reason: Some(FinishReason::StopSequenceReached),
             }],
@@ -211,15 +214,15 @@ async fn chat_completions(
         object: String::from("chat.completion"),
         created: u32::try_from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())?,
         model: model_name,
+        service_tier: None,
         system_fingerprint: None,
         choices: vec![ChatCompletionChoice {
             index: 0,
-            message: ChatMessage {
+            message: ChatMessage::Assistant {
+                content: Some(ChatMessageContent::Text(contents.into_iter().collect())),
+                refusal: None,
                 name: None,
-                role: Role::Assistant,
                 tool_calls: None,
-                tool_call_id: None,
-                content: ChatMessageContent::Text(contents.into_iter().collect()),
             },
             finish_reason: Some(FinishReason::StopSequenceReached),
             logprobs: None,
@@ -322,31 +325,20 @@ fn build_triton_request(
 fn build_chat_history(messages: Vec<ChatMessage>) -> String {
     let mut history = String::new();
     for message in messages {
-        let ChatMessageContent::Text(content) = message.content else {
+        let (role, content, name) = match message {
+            ChatMessage::System { content, name } => ("System", Some(content), name),
+            ChatMessage::User { content, name } => ("User", Some(content), name),
+            ChatMessage::Assistant { content, name, .. } => ("Assistant", content, name),
+            ChatMessage::Tool { content, .. } => ("Tool", Some(ChatMessageContent::Text(content)), None),
+            ChatMessage::Function { .. } => continue,
+        };
+        let Some(ChatMessageContent::Text(content)) = content else {
             continue;
         };
-        match message.role {
-            Role::System => {
-                if let Some(name) = message.name {
-                    history.push_str(&format!("System {name}: {content}\n"));
-                } else {
-                    history.push_str(&format!("System: {content}\n"));
-                }
-            }
-            Role::User => {
-                if let Some(name) = message.name {
-                    history.push_str(&format!("User {name}: {content}\n"));
-                } else {
-                    history.push_str(&format!("User: {content}\n"));
-                }
-            }
-            Role::Assistant => {
-                history.push_str(&format!("Assistant: {content}\n"));
-            }
-            Role::Tool => {
-                history.push_str(&format!("Tool: {content}\n"));
-            }
-            Role::Function => {}
+        if let Some(name) = name {
+            history.push_str(&format!("{role} {name}: {content}\n"));
+        } else {
+            history.push_str(&format!("{role}: {content}\n"));
         }
     }
     history.push_str("ASSISTANT:");
