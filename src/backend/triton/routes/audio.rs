@@ -182,6 +182,11 @@ fn build_triton_request(
             };
             Cursor::new(b.bytes)
         }
+        FileUpload::BytesArray(_) | FileUpload::FileArray(_) => {
+            return Err(AiRouterError::BadRequestError(String::from(
+                "multiple audio files are not supported",
+            )));
+        }
         FileUpload::File(_) => {
             return Err(AiRouterError::InternalServerError(String::from(
                 "`FileUpload::File` variant not supported",
