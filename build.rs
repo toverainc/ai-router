@@ -26,7 +26,7 @@ fn main() -> Result<()> {
         })
         .into();
 
-    println!("cargo:rerun-if-changed={}", &pb_dir.display());
+    println!("cargo:rerun-if-changed={}", pb_dir.display());
 
     let protobuf_paths = get_protobuf_paths(&pb_dir).context(format!(
         "failed to find Protocol Buffers paths for {}",
