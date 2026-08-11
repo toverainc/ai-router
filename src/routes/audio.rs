@@ -7,9 +7,9 @@ use axum::response::Response;
 use axum::Json;
 use bytes::Bytes;
 use openai_dive::v1::resources::audio::{
-    AudioOutputFormat, AudioSpeechParameters, AudioTranscriptionBytes, AudioTranscriptionFile,
-    AudioTranscriptionParameters, TimestampGranularity,
+    AudioOutputFormat, AudioSpeechParameters, AudioTranscriptionParameters, TimestampGranularity,
 };
+use openai_dive::v1::resources::shared::{FileUpload, FileUploadBytes};
 use tracing::instrument;
 
 use crate::backend::openai::routes as openai_routes;
@@ -107,7 +107,7 @@ pub async fn build_transcription_parameters(
     mut multipart: Multipart,
 ) -> Result<AudioTranscriptionParameters, AiRouterError<String>> {
     let mut parameters = AudioTranscriptionParameters {
-        file: AudioTranscriptionFile::File(String::new()),
+        file: FileUpload::default(),
         language: None,
         model: String::new(),
         prompt: None,
@@ -134,12 +134,12 @@ pub async fn build_transcription_parameters(
             is_audio_format_supported(&filename)?;
 
             let field_data_vec = get_field_data_vec(&field.bytes().await?, &field_name)?;
-            let bytes = AudioTranscriptionBytes {
+            let bytes = FileUploadBytes {
                 bytes: Bytes::copy_from_slice(&field_data_vec),
                 filename,
             };
 
-            parameters.file = AudioTranscriptionFile::Bytes(bytes);
+            parameters.file = FileUpload::Bytes(bytes);
         } else if field_name == "language" {
             let field_data_vec = get_field_data_vec(&field.bytes().await?, &field_name)?;
 
