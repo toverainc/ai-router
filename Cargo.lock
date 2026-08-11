@@ -63,6 +63,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "serde_plain",
  "serde_with",
  "tokenizers",
  "tokio",
@@ -1693,9 +1694,9 @@ checksum = "0ab1bc2a289d34bd04a330323ac98a1b4bc82c9d9fcb1e66b63caa84da26b575"
 
 [[package]]
 name = "openai_dive"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "439619175308e3441ec2ee1ba1e5261f5b2a98caee43fb40847a176d0b49095b"
+checksum = "da30b926cec21fab98eb1b086267c515c0ef3b9e2af828358dc258b1a36a7501"
 dependencies = [
  "bytes",
  "derive_builder",
@@ -1704,8 +1705,6 @@ dependencies = [
  "reqwest-eventsource",
  "serde",
  "serde_json",
- "strum",
- "strum_macros",
  "tokio",
  "tokio-stream",
  "tokio-util",
@@ -2531,6 +2530,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_plain"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ce1fc6db65a611022b23a0dec6975d63fb80a302cb3388835ff02c097258d50"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "serde_spanned"
 version = "0.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2653,25 +2661,6 @@ name = "strsim"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
-
-[[package]]
-name = "strum"
-version = "0.26.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8fec0f0aef304996cf250b31b5a10dee7980c85da9d759361292b8bca5a18f06"
-
-[[package]]
-name = "strum_macros"
-version = "0.26.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4c6bee85a5a24955dc440386795aa378cd9cf82acd5f764469152d2270e581be"
-dependencies = [
- "heck",
- "proc-macro2",
- "quote",
- "rustversion",
- "syn",
-]
 
 [[package]]
 name = "subtle"
