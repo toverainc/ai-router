@@ -347,19 +347,17 @@ fn resolve_max_tokens(
 fn build_chat_history(messages: Vec<ChatMessage>) -> String {
     let mut history = String::new();
     for message in messages {
-        let (role, content, name) = match message {
-            ChatMessage::Developer { content, name } => ("System", Some(content), name),
-            ChatMessage::System { content, name } => ("System", Some(content), name),
-            ChatMessage::User { content, name } => ("User", Some(content), name),
-            ChatMessage::Assistant { content, name, .. } => ("Assistant", content, name),
-            ChatMessage::Tool { content, .. } => {
-                ("Tool", Some(ChatMessageContent::Text(content)), None)
-            }
+        let role = match &message {
+            ChatMessage::Developer { .. } => "System",
+            ChatMessage::System { .. } => "System",
+            ChatMessage::User { .. } => "User",
+            ChatMessage::Assistant { .. } => "Assistant",
+            ChatMessage::Tool { .. } => "Tool",
         };
-        let Some(ChatMessageContent::Text(content)) = content else {
+        let Some(content) = message.text() else {
             continue;
         };
-        if let Some(name) = name {
+        if let Some(name) = message.name() {
             history.push_str(&format!("{role} {name}: {content}\n"));
         } else {
             history.push_str(&format!("{role}: {content}\n"));
