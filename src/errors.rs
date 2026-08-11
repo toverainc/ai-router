@@ -13,7 +13,7 @@ pub enum AiRouterError<T> {
     InputExceededError(String, usize, usize),
     InternalServerError(String),
     ModelNotFound(String),
-    UnknownUrl(Request<T>),
+    UnknownUrl(Box<Request<T>>),
     WrappedOpenAi(OpenAIError),
 }
 
