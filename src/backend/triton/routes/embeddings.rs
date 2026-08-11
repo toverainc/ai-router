@@ -87,6 +87,8 @@ pub(crate) async fn embed(
             prompt_tokens: 0,
             completion_tokens: Some(0),
             total_tokens: 0,
+            prompt_tokens_details: None,
+            completion_tokens_details: None,
         }),
     }))
 }
