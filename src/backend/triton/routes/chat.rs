@@ -133,6 +133,7 @@ async fn chat_completions_stream(
                             tool_calls: None,
                         },
                         finish_reason: None,
+                        logprobs: None,
                     }],
                 };
                 yield Event::default().json_data(response)?;
@@ -154,6 +155,7 @@ async fn chat_completions_stream(
                     tool_call_id: None,
                 },
                 finish_reason: Some(FinishReason::StopSequenceReached),
+                logprobs: None,
             }],
         };
         yield Event::default().json_data(response)?;
@@ -242,6 +244,8 @@ async fn chat_completions(
             completion_tokens: Some(0),
             // add completion_tokens once we can get them from Triton
             total_tokens: prompt_tokens,
+            prompt_tokens_details: None,
+            completion_tokens_details: None,
         }),
     }))
 }
