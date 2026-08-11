@@ -238,6 +238,10 @@ async fn chat_completions(
         // Not fully supported yet, need Triton to return usage stats
         // but populate prompt_tokens and total_tokens for models configured with max_tokens
         usage: Some(Usage {
+            input_tokens: None,
+            input_tokens_details: None,
+            output_tokens: None,
+            output_tokens_details: None,
             prompt_tokens: Some(prompt_tokens),
             completion_tokens: Some(0),
             // add completion_tokens once we can get them from Triton
@@ -299,6 +303,14 @@ fn build_triton_request(
             "presence_penalty",
             [1, 1],
             InferTensorData::FP32(vec![presence_penalty]),
+        );
+    }
+
+    if let Some(seed) = request.seed {
+        builder = builder.input(
+            "random_seed",
+            [1, 1],
+            InferTensorData::UInt64(vec![u64::from(seed)]),
         );
     }
 
