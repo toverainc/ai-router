@@ -222,6 +222,7 @@ async fn chat_completions(
                 content: ChatMessageContent::Text(contents.into_iter().collect()),
             },
             finish_reason: Some(FinishReason::StopSequenceReached),
+            logprobs: None,
         }],
         // Not fully supported yet, need Triton to return usage stats
         // but populate prompt_tokens and total_tokens for models configured with max_tokens
