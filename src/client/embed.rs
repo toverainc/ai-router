@@ -54,7 +54,7 @@ async fn main() {
     match client.embeddings().create(request).await {
         Err(e) => println!("{e}"),
         Ok(o) => println!("{o:#?}"),
-    };
+    }
 
     let duration = start.elapsed();
 
