@@ -28,7 +28,7 @@ clap = { version = "4.5.4", features = ["derive"] }
 figment = { version = "0.10.19", features = ["env", "toml"] }
 fon = "0.6.0"
 minijinja = { version = "1.0.21", features = ["loader"] }
-openai_dive = { version = "=0.5.3", default-features = false, features = ["rustls-tls", "stream", "tokio", "tokio-util"] }
+openai_dive = { version = "=0.5.4", default-features = false, features = ["rustls-tls", "stream", "tokio", "tokio-util"] }
 opentelemetry = { version = "0.23.0", features = ["metrics"] }
 opentelemetry-jaeger-propagator = "0.2.0"
 opentelemetry-otlp = "0.16.0"
