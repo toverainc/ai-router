@@ -312,14 +312,6 @@ fn build_triton_request(
         );
     }
 
-    if let Some(seed) = request.seed {
-        builder = builder.input(
-            "random_seed",
-            [1, 1],
-            InferTensorData::UInt64(vec![u64::from(seed)]),
-        );
-    }
-
     if let Some(stop) = request.stop {
         let stop_words = match stop {
             StopToken::Array(a) => string_vec_to_byte_vecs(&a),
