@@ -121,6 +121,7 @@ async fn chat_completions_stream(
                     created,
                     model: model_name.clone(),
                     system_fingerprint: None,
+                    usage: None,
                     choices: vec![ChatCompletionChunkChoice {
                         index: Some(0),
                         delta: DeltaChatMessage::Assistant {
@@ -142,6 +143,7 @@ async fn chat_completions_stream(
             created,
             model: model_name,
             system_fingerprint: None,
+            usage: None,
             choices: vec![ChatCompletionChunkChoice {
                 index: Some(0),
                 delta: DeltaChatMessage::Untagged {
@@ -342,11 +344,13 @@ fn build_chat_history(messages: Vec<ChatMessage>) -> String {
     let mut history = String::new();
     for message in messages {
         let (role, content, name) = match message {
+            ChatMessage::Developer { content, name } => ("System", Some(content), name),
             ChatMessage::System { content, name } => ("System", Some(content), name),
             ChatMessage::User { content, name } => ("User", Some(content), name),
             ChatMessage::Assistant { content, name, .. } => ("Assistant", content, name),
-            ChatMessage::Tool { content, .. } => ("Tool", Some(ChatMessageContent::Text(content)), None),
-            ChatMessage::Function { .. } => continue,
+            ChatMessage::Tool { content, .. } => {
+                ("Tool", Some(ChatMessageContent::Text(content)), None)
+            }
         };
         let Some(ChatMessageContent::Text(content)) = content else {
             continue;
@@ -371,6 +375,7 @@ fn string_vec_to_byte_vecs(strings: &Vec<String>) -> Vec<Vec<u8>> {
 
     byte_vecs
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -381,5 +386,18 @@ mod tests {
         assert_eq!(resolve_max_tokens(None, Some(2), Some(3)), 2);
         assert_eq!(resolve_max_tokens(None, None, Some(3)), 3);
         assert_eq!(resolve_max_tokens(None, None, None), MAX_TOKENS);
+    }
+
+    #[test]
+    fn developer_messages_are_added_to_chat_history_as_system_messages() {
+        let messages = vec![ChatMessage::Developer {
+            content: ChatMessageContent::Text("Follow the developer instructions".to_string()),
+            name: Some("policy".to_string()),
+        }];
+
+        assert_eq!(
+            build_chat_history(messages),
+            "System policy: Follow the developer instructions\nASSISTANT:"
+        );
     }
 }
