@@ -121,12 +121,15 @@ pub async fn build_transcription_parameters(
 ) -> Result<AudioTranscriptionParameters, AiRouterError<String>> {
     let mut parameters = AudioTranscriptionParameters {
         file: FileUpload::default(),
-        language: None,
         model: String::new(),
+        language: None,
+        chunking_strategy: None,
         prompt: None,
         response_format: None,
+        stream: None,
         temperature: None,
         timestamp_granularities: None,
+        extra_body: None,
     };
 
     let mut timestamp_granularities: Vec<TimestampGranularity> = Vec::new();
