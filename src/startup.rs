@@ -66,7 +66,7 @@ pub async fn run_server(config_file: &AiRouterConfigFile) -> anyhow::Result<()> 
 async fn fallback<T: std::fmt::Debug + std::marker::Send>(
     request: axum::http::Request<T>,
 ) -> impl IntoResponse {
-    AiRouterError::UnknownUrl(request)
+    AiRouterError::UnknownUrl(Box::new(request))
 }
 
 async fn shutdown_signal() {
