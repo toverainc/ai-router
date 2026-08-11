@@ -130,6 +130,7 @@ async fn chat_completions_stream(
                             tool_calls: None,
                         },
                         finish_reason: None,
+                        logprobs: None,
                     }],
                 };
                 yield Event::default().json_data(response)?;
@@ -151,6 +152,7 @@ async fn chat_completions_stream(
                     tool_call_id: None,
                 },
                 finish_reason: Some(FinishReason::StopSequenceReached),
+                logprobs: None,
             }],
         };
         yield Event::default().json_data(response)?;
@@ -234,6 +236,8 @@ async fn chat_completions(
             completion_tokens: Some(0),
             // add completion_tokens once we can get them from Triton
             total_tokens: prompt_tokens,
+            prompt_tokens_details: None,
+            completion_tokens_details: None,
         }),
     }))
 }
@@ -242,6 +246,11 @@ fn build_triton_request(
     request: ChatCompletionParameters,
     request_data: &mut AiRouterRequestData,
 ) -> Result<ModelInferRequest, AiRouterError<String>> {
+    let max_tokens = resolve_max_tokens(
+        request.max_completion_tokens,
+        request.max_tokens,
+        request_data.max_tokens,
+    );
     let chat_history = build_chat_history(request.messages);
     tracing::debug!("chat history after formatting: {}", chat_history);
 
@@ -262,11 +271,7 @@ fn build_triton_request(
         .input(
             "max_tokens",
             [1, 1],
-            InferTensorData::Int32(vec![i32::try_from(
-                request
-                    .max_tokens
-                    .unwrap_or(request_data.max_tokens.unwrap_or(MAX_TOKENS)),
-            )?]),
+            InferTensorData::Int32(vec![i32::try_from(max_tokens)?]),
         )
         .input(
             "stream",
@@ -322,6 +327,17 @@ fn build_triton_request(
     Ok(builder.build().context("failed to build triton request")?)
 }
 
+fn resolve_max_tokens(
+    max_completion_tokens: Option<u32>,
+    max_tokens: Option<u32>,
+    configured_max_tokens: Option<u32>,
+) -> u32 {
+    max_completion_tokens
+        .or(max_tokens)
+        .or(configured_max_tokens)
+        .unwrap_or(MAX_TOKENS)
+}
+
 fn build_chat_history(messages: Vec<ChatMessage>) -> String {
     let mut history = String::new();
     for message in messages {
@@ -354,4 +370,16 @@ fn string_vec_to_byte_vecs(strings: &Vec<String>) -> Vec<Vec<u8>> {
     }
 
     byte_vecs
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolves_max_tokens_in_api_precedence_order() {
+        assert_eq!(resolve_max_tokens(Some(1), Some(2), Some(3)), 1);
+        assert_eq!(resolve_max_tokens(None, Some(2), Some(3)), 2);
+        assert_eq!(resolve_max_tokens(None, None, Some(3)), 3);
+        assert_eq!(resolve_max_tokens(None, None, None), MAX_TOKENS);
+    }
 }

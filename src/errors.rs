@@ -146,7 +146,8 @@ pub fn transform_openai_dive_apierror(input: &APIError) -> AiRouterError<String>
         | APIError::RateLimitError(s)
         | APIError::ServerError(s)
         | APIError::StreamError(s)
-        | APIError::UnknownError(_, s) => serde_json::from_str(s).unwrap_or_else(|e| {
+        | APIError::UnknownError(_, s)
+        | APIError::WebSocketError(s) => serde_json::from_str(s).unwrap_or_else(|e| {
             tracing::error!("failed to deserialize {s}: {e}");
             default
         }),
