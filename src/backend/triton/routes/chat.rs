@@ -124,6 +124,7 @@ async fn chat_completions_stream(
                     created,
                     model: model_name.clone(),
                     system_fingerprint: None,
+                    usage: None,
                     choices: vec![ChatCompletionChunkChoice {
                         index: Some(0),
                         delta: DeltaChatMessage::Assistant {
@@ -145,6 +146,7 @@ async fn chat_completions_stream(
             created,
             model: model_name,
             system_fingerprint: None,
+            usage: None,
             choices: vec![ChatCompletionChunkChoice {
                 index: Some(0),
                 delta: DeltaChatMessage::Untagged {
