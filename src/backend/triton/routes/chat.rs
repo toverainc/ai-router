@@ -10,7 +10,7 @@ use axum::Json;
 use openai_dive::v1::resources::chat::{
     ChatCompletionChoice, ChatCompletionChunkChoice, ChatCompletionChunkResponse,
     ChatCompletionParameters, ChatCompletionResponse, ChatMessage, ChatMessageContent,
-    DeltaChatMessage, Role,
+    DeltaChatMessage,
 };
 use openai_dive::v1::resources::shared::{FinishReason, StopToken, Usage};
 use serde_json::json;
@@ -126,9 +126,10 @@ async fn chat_completions_stream(
                     system_fingerprint: None,
                     choices: vec![ChatCompletionChunkChoice {
                         index: Some(0),
-                        delta: DeltaChatMessage {
-                            role: Some(Role::Assistant),
-                            content: Some(content_new),
+                        delta: DeltaChatMessage::Assistant {
+                            content: Some(ChatMessageContent::Text(content_new)),
+                            refusal: None,
+                            name: None,
                             tool_calls: None,
                         },
                         finish_reason: None,
@@ -145,10 +146,12 @@ async fn chat_completions_stream(
             system_fingerprint: None,
             choices: vec![ChatCompletionChunkChoice {
                 index: Some(0),
-                delta: DeltaChatMessage {
-                    role: None,
+                delta: DeltaChatMessage::Untagged {
                     content: None,
+                    refusal: None,
+                    name: None,
                     tool_calls: None,
+                    tool_call_id: None,
                 },
                 finish_reason: Some(FinishReason::StopSequenceReached),
             }],
@@ -219,15 +222,15 @@ async fn chat_completions(
         object: String::from("chat.completion"),
         created: u32::try_from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())?,
         model: model_name,
+        service_tier: None,
         system_fingerprint: None,
         choices: vec![ChatCompletionChoice {
             index: 0,
-            message: ChatMessage {
+            message: ChatMessage::Assistant {
+                content: Some(ChatMessageContent::Text(contents.into_iter().collect())),
+                refusal: None,
                 name: None,
-                role: Role::Assistant,
                 tool_calls: None,
-                tool_call_id: None,
-                content: ChatMessageContent::Text(contents.into_iter().collect()),
             },
             finish_reason: Some(FinishReason::StopSequenceReached),
             logprobs: None,
