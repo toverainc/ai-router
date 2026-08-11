@@ -135,12 +135,14 @@ pub fn transform_openai_dive_apierror(input: &APIError) -> AiRouterError<String>
     };
 
     let error: OpenAIErrorData = match input {
-        APIError::EndpointError(s)
+        APIError::AuthenticationError(s)
         | APIError::FileError(s)
         | APIError::InvalidRequestError(s)
         | APIError::ParseError(s)
+        | APIError::RateLimitError(s)
         | APIError::ServerError(s)
-        | APIError::StreamError(s) => serde_json::from_str(s).unwrap_or_else(|e| {
+        | APIError::StreamError(s)
+        | APIError::UnknownError(_, s) => serde_json::from_str(s).unwrap_or_else(|e| {
             tracing::error!("failed to deserialize {s}: {e}");
             default
         }),
