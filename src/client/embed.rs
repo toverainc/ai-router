@@ -36,6 +36,7 @@ async fn main() {
     let client = OpenAIClient {
         api_key: args.api_key,
         base_url: args.url,
+        headers: None,
         http_client: reqwest::Client::new(),
         organization: None,
         project: None,

@@ -33,6 +33,7 @@ impl Backend {
                         .unwrap_or_else(|| panic!("OpenAI backend {name} is missing API key"))
                         .clone(),
                     base_url: backend.base_url.clone(),
+                    headers: None,
                     http_client: reqwest::Client::new(),
                     organization: None,
                     project: None,
