@@ -7,9 +7,8 @@ use axum::Json;
 use bytes::Bytes;
 use fon::chan::Ch32;
 use fon::Audio;
-use openai_dive::v1::resources::audio::{
-    AudioOutputFormat, AudioTranscriptionFile, AudioTranscriptionParameters,
-};
+use openai_dive::v1::resources::audio::{AudioOutputFormat, AudioTranscriptionParameters};
+use openai_dive::v1::resources::shared::FileUpload;
 use serde::Serialize;
 use tonic::transport::Channel;
 use tracing::instrument;
@@ -174,7 +173,7 @@ fn build_triton_request(
     templater: Templater,
 ) -> Result<ModelInferRequest, AiRouterError<String>> {
     let audio = match request.file {
-        AudioTranscriptionFile::Bytes(b) => {
+        FileUpload::Bytes(b) => {
             let extension = get_file_extension(&b.filename)?;
             if extension != "wav" {
                 return Err(AiRouterError::InternalServerError::<String>(format!(
@@ -183,9 +182,9 @@ fn build_triton_request(
             };
             Cursor::new(b.bytes)
         }
-        AudioTranscriptionFile::File(_) => {
+        FileUpload::File(_) => {
             return Err(AiRouterError::InternalServerError(String::from(
-                "`AudioTranscriptionFile::File` variant not supported",
+                "`FileUpload::File` variant not supported",
             )));
         }
     };
