@@ -136,7 +136,9 @@ pub fn transform_openai_dive_apierror(input: &APIError) -> AiRouterError<String>
 
     let error: OpenAIErrorData = match input {
         APIError::AuthenticationError(s)
+        | APIError::BadRequestError(s)
         | APIError::FileError(s)
+        | APIError::GoneError(s)
         | APIError::InvalidRequestError(s)
         | APIError::ParseError(s)
         | APIError::RateLimitError(s)
