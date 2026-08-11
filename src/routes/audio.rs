@@ -1,5 +1,4 @@
 use std::io::Read;
-use std::str::FromStr;
 use std::sync::Arc;
 
 use anyhow::Context;
@@ -169,7 +168,7 @@ pub async fn build_transcription_parameters(
         } else if field_name == "response_format" {
             let field_data_vec = get_field_data_vec(&field.bytes().await?, &field_name)?;
             let response_format = String::from_utf8(field_data_vec)?;
-            let response_format = AudioOutputFormat::from_str(&response_format)?;
+            let response_format = serde_plain::from_str(&response_format)?;
 
             parameters.response_format = Some(response_format);
         } else if field_name == "temperature" {
@@ -179,7 +178,7 @@ pub async fn build_transcription_parameters(
         } else if field_name == "timestamp_granularities[]" {
             let field_data_vec = get_field_data_vec(&field.bytes().await?, &field_name)?;
             let granularity = String::from_utf8(field_data_vec)?;
-            let granularity = TimestampGranularity::from_str(&granularity)?;
+            let granularity = serde_plain::from_str(&granularity)?;
 
             timestamp_granularities.push(granularity);
         }
