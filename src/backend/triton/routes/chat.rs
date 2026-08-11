@@ -129,6 +129,7 @@ async fn chat_completions_stream(
                         index: Some(0),
                         delta: DeltaChatMessage::Assistant {
                             content: Some(ChatMessageContent::Text(content_new)),
+                            reasoning_content: None,
                             refusal: None,
                             name: None,
                             tool_calls: None,
@@ -151,6 +152,7 @@ async fn chat_completions_stream(
                 index: Some(0),
                 delta: DeltaChatMessage::Untagged {
                     content: None,
+                    reasoning_content: None,
                     refusal: None,
                     name: None,
                     tool_calls: None,
@@ -232,8 +234,10 @@ async fn chat_completions(
             index: 0,
             message: ChatMessage::Assistant {
                 content: Some(ChatMessageContent::Text(contents.into_iter().collect())),
+                reasoning_content: None,
                 refusal: None,
                 name: None,
+                audio: None,
                 tool_calls: None,
             },
             finish_reason: Some(FinishReason::StopSequenceReached),

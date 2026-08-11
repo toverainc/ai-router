@@ -34,7 +34,7 @@ pub async fn get(AxumState(state): AxumState<Arc<State>>) -> Response {
     for model_name in model_names {
         let model = Model {
             id: model_name,
-            created: 1_700_000_000,
+            created: Some(1_700_000_000),
             object: String::from("model"),
             owned_by: String::from("original owners"),
         };
