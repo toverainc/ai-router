@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::extract::State as AxumState;
+use axum::extract::{rejection::JsonRejection, State as AxumState};
 use axum::response::Response;
 use axum::Json;
 use openai_dive::v1::resources::chat::ChatCompletionParameters;
@@ -16,8 +16,11 @@ use crate::state::{BackendTypes, State};
 #[instrument(level = "debug", skip(state, request))]
 pub async fn completion(
     AxumState(state): AxumState<Arc<State>>,
-    mut request: Json<ChatCompletionParameters>,
+    request: Result<Json<ChatCompletionParameters>, JsonRejection>,
 ) -> Result<Response, AiRouterError<String>> {
+    let mut request =
+        request.map_err(|rejection| AiRouterError::BadRequestError(rejection.body_text()))?;
+
     if let Some(models) = state.config.models.get(&AiRouterModelType::ChatCompletions) {
         if let Some(model) = models.get(&request.model) {
             let mut request_data = AiRouterRequestData::build(
