@@ -13,13 +13,13 @@ build)
 
 run)
     docker run --rm -it -p "$PORT":3000 \
-	    --volume="${PWD}/${AIROUTER_CONFIG_FILE}:/etc/ai-router.toml" \
+	    --volume="${PWD}/${AIROUTER_CONFIG_FILE}:/etc/ai-router/config.toml" \
 	    ai-router:latest
 ;;
 
 run-local)
     docker run --rm -it --net=host \
-	    --volume="${PWD}/${AIROUTER_CONFIG_FILE}:/etc/ai-router.toml" \
+	    --volume="${PWD}/${AIROUTER_CONFIG_FILE}:/etc/ai-router/config.toml" \
 	    ai-router:latest
 ;;
 
