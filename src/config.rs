@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::{formats::PreferMany, serde_as, skip_serializing_none, OneOrMany};
 use uuid::Uuid;
 
-const DEFAULT_CONFIG_FILE: &str = "/etc/ai-router.toml";
+const DEFAULT_CONFIG_FILE: &str = "/etc/ai-router/config.toml";
 
 pub type AiRouterModels = HashMap<AiRouterModelType, HashMap<String, AiRouterModel>>;
 
